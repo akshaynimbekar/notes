@@ -1,0 +1,840 @@
+PROJECT:
+======================
+$ cat ~/.ssh/id_ed25519.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEdrcJkO7jLbYxz1cEUchH4qchxoP64oSFGyBj9d2/8S akshaynimbekar1999@gmail.com
+
+
+======================
+Got it 👍 — no need to build the “enterprise golden source” straight away.
+
+Since you worked on DMSI – Cash Equity (Static Reference Data Management), you can design a smaller but meaningful project that reflects your past domain expertise while staying realistic for a personal repo/demo.
+
+---
+
+## 🎯 Small project idea (starter, but banking-relevant)
+
+📌 “Instrument Reference Data Service” IRDS
+	=========================================
+	  
+A mini version of your DMSI project:
+
+* A single Spring Boot microservice that stores and exposes *equity instrument reference data* (e.g., ISIN, CUSIP, ticker, exchange, currency).
+* Provides CRUD APIs + search endpoints (e.g., find instrument by ISIN).
+* Includes audit logging (who changed what, when).
+* Supports CSV file upload (bulk instrument load).
+* Publishes a simple “instrument.updated” event to a Kafka topic (or just logs it if you want to skip Kafka in v1).
+* Deployed on Docker + Kubernetes (local minikube kind first, then AWS EKS).
+* CI/CD with GitHub Actions → Build, Test, Dockerize, Deploy.
+
+---
+
+## Why this works
+
+✅ Closely tied to your Capgemini banking project (interviewers will see continuity).
+✅ Small enough to complete in a week or two.
+✅ Still shows Java + Spring Boot + DB + AWS + DevOps + Kubernetes.
+✅ Scalable later: add subscription service, multiple microservices, etc.
+
+---
+
+## MVP Feature Set
+
+* REST APIs:
+
+  * `POST /instruments` → add instrument
+  * `GET /instruments/{id}` → fetch by ID
+  * `GET /instruments/search?isin=XXX` → search by ISIN
+  * `PUT /instruments/{id}` → update instrument
+  * `GET /audit` → list change history
+* Database: Postgres (locally via Docker Compose; RDS in AWS later).
+* Audit Trail: extra DB table logging changes.
+* CSV Loader: Upload CSV file with multiple instruments.
+* Events: simple Kafka producer (later hook into a subscriber service).
+* Security (basic): JWT authentication with Spring Security.
+
+---
+
+## Roadmap (step-by-step)
+
+Phase 1 (Local demo)
+
+* Spring Boot service (CRUD + DB + audit)
+* Dockerize service
+* Postgres with Docker Compose
+* CI/CD pipeline: build, test, push Docker image
+
+Phase 2 (Cloud-native)
+
+* Deploy on Kubernetes (minikube → EKS)
+* Helm chart for deployment
+* External Postgres (Amazon RDS)
+* Kafka topic (optional: MSK or local testcontainers)
+
+Phase 3 (Nice-to-have)
+
+* Add Subscriber service (consumes instrument updates)
+* Add simple Angular/React dashboard to browse instruments
+* Observability (Prometheus, Grafana, logs)
+
+---
+
+👉 This is achievable as a first showcase project.
+Later, you can extend it into a larger “golden source platform” with multiple services.
+
+----------------------------------------------------------------------------------------------------
+
+Learning coverage:
+=================
+
+Great question 👌 — this “Instrument Reference Data Service” (mini-DMSI) project will give you a compact but deep learning path that you can confidently talk about in interviews.
+
+Here’s the breakdown of learning coverages (skills you’ll gain + showcase):
+
+---
+
+## 1. Backend Engineering (Java & Spring Boot)
+
+* Building REST APIs with Spring Boot (controllers, services, DTOs).
+* ORM & persistence with Spring Data JPA / Hibernate.
+* Schema migrations with Flyway or Liquibase.
+* Implementing audit logging (important in banking compliance).
+* Data validation & error handling (Bean Validation, exception mappers).
+* Unit & integration testing (JUnit, Testcontainers for Postgres).
+
+✅ Interview Value → Shows strong backend + domain expertise (instruments, reference data).
+
+---
+
+## 2. Database & Data Modeling
+
+* Designing schema for instrument static data (ISIN, ticker, exchange, currency).
+* Implementing audit trail table → append-only history.
+* Query optimizations (search by ISIN, ticker).
+* Using Postgres locally and preparing for AWS RDS.
+
+✅ Interview Value → Demonstrates “golden source” data modeling, compliance, and auditability.
+
+---
+
+## 3. Messaging & Event-Driven Architecture (Optional but valuable)
+
+* Publishing an `instrument.updated` event (Kafka producer).
+* Designing an event payload schema (JSON Avro/Protobuf).
+* Optionally, a mock subscriber service to simulate downstream consumers.
+
+✅ Interview Value → Event-driven systems are common in banking (publication/subscription model).
+
+---
+
+## 4. DevOps & CI/CD
+
+* Writing a Dockerfile (multi-stage build) for Spring Boot.
+* Using Docker Compose for local Postgres setup.
+* GitHub Actions pipeline:
+
+  * Build + test → Dockerize → Push to AWS ECR → Deploy to cluster.
+* Optional: Code quality & security scanning (SpotBugs, OWASP Dependency Check).
+
+✅ Interview Value → Hands-on DevOps integration, real-world pipelines.
+
+---
+
+## 5. Kubernetes & Cloud (AWS)
+
+* Deploying microservice to Kubernetes (EKS).
+* Writing Kubernetes manifests (Deployment, Service, ConfigMap, Secret).
+* Using Helm charts for templated deployments.
+* Connecting service to AWS RDS (Postgres).
+* Managing secrets via AWS Secrets Manager + External Secrets Operator.
+
+✅ Interview Value → Shows you can take code to production in cloud-native environments.
+
+---
+
+## 6. Security & Compliance (Banking Essentials)
+
+* Implementing JWT authentication with Spring Security.
+* Protecting sensitive data (no plain secrets, only via AWS Secrets Manager).
+* Encrypting DB at rest (RDS KMS) & TLS in transit (K8s ingress).
+* Audit logging → aligns with banking compliance (SOX, Basel, etc).
+
+✅ Interview Value → Banking domain = heavy compliance. This makes your project credible.
+
+---
+
+## 7. Observability
+
+* Adding health endpoints (`/actuator/health`).
+* Exposing metrics (Spring Boot Actuator + Prometheus).
+* Logging with structured JSON logs → ship to CloudWatch.
+* Optional: distributed tracing with OpenTelemetry + Jaeger.
+
+✅ Interview Value → Shows reliability & monitoring thinking (huge in finance ops).
+
+---
+
+## 8. Banking Domain Knowledge
+
+* Handling reference/instrument data (aligns directly with your past DMSI project).
+* Explaining golden source concept (single source of truth).
+* Publication & subscription model (data consumers get notified on change).
+* Regulatory requirement → audit trail.
+
+✅ Interview Value → You can talk in both tech + business language (rare and valuable).
+
+---
+
+## 📌 In short, this project covers:
+
+* Backend dev (Java/Spring Boot + DB + API design)
+* DevOps & CI/CD (Docker, GitHub Actions, AWS ECR)
+* Cloud & Kubernetes (EKS, Helm, RDS, Secrets)
+* Security & Compliance (JWT, audit trail, secrets mgmt)
+* Banking Domain (instrument reference data, golden source, auditability)
+
+That means you can pitch it as:
+
+> *“I built a cloud-native, containerized reference data service that models banking instrument data, enforces audit trails for compliance, publishes updates via events, and runs on AWS EKS with automated CI/CD.”*
+
+
+----------------------------------------------------------------------------------------------------
+
+Prompt:
+======
+That great, but before we start I want to tell you some things in advance like I am using sts ide for this Also you have to explain me the code and project structure as well in each step. I know this will be a bit lengthy if you are explaining everything, but I am doing this project to showcase my expertise in spring boot, microservices and to add in my resume. Hope so you are getting me. 
+Now lets start with SRS document then project structure, explain me where(in which file/folder/package) we are writing which code, the framework we are using Try to follow industry way, the way ,project is build in IT industry
+
+---------------->>>>>>
+
+Perfect 👍 — I get you completely. You’re not just building this to run, you want to build it the way real IT projects are built, so that when someone reviews your code or repo they see a professional structure with proper documentation, layers, and standards.
+
+Let’s go step by step, starting from SRS (Software Requirements Specification) → then project structure → then we’ll implement feature by feature, each time I’ll explain *where the code goes, why it belongs there, and what framework support we’re leveraging*.
+
+---
+
+SRS Document (Industry Style)
+=============================
+
+
+📌 *This is what you’d normally prepare before writing code. It helps in design reviews, client approvals, and sets the scope clearly.*
+
+---
+
+## 1. Introduction
+
+ 1.1 Purpose
+
+The purpose of the Instrument Reference Data Service is to provide a centralized system to manage and expose equity instrument reference data (e.g., ISIN, CUSIP, ticker, exchange, currency).
+The system will provide:
+
+* CRUD operations for instruments
+* Search/filter capabilities
+* Bulk data ingestion (via CSV upload)
+* Audit logging of changes
+* Event publishing when data is updated (Kafka or fallback logging)
+* Deployment support for Docker, Kubernetes, and CI/CD pipelines
+
+This service will initially be built as a monolithic Spring Boot application, and later evolved into microservices for scalability and modularity.
+
+---
+
+## 2. Scope
+
+* Users: Internal banking users, other microservices (downstream consumers), operations team
+* System Interfaces:
+
+  * REST APIs (Swagger / OpenAPI docs)
+  * Kafka Event Topics
+  * CSV file upload endpoint
+  * Actuator endpoints for monitoring
+
+---
+
+## 3. Functional Requirements
+
+1. Instrument Management
+   * Create, Read, Update, Delete instruments
+   * Uniqueness checks for ISIN & CUSIP
+   * Partial updates (PATCH) support
+   
+2. Search
+   * Find instrument by ISIN/ticker/exchange
+   * Full-text style search with pagination/sorting
+   
+3. Bulk Upload
+   * Upload CSV file containing instruments
+   * Validate each row (ISIN, ticker, exchange, etc.)
+   * Provide job status (success/failures report)
+   
+4. Audit
+   * Maintain audit log of changes
+   * Who changed what, when, old vs. new values
+   
+5. Eventing
+   * Publish event `instrument.updated` (Kafka or log fallback)
+   
+6. Security
+   * Authentication & Authorization (in-memory for v1 → JWT/OAuth2 for v2)
+
+---
+
+## 4. Non-Functional Requirements
+
+* Performance: CRUD APIs should respond <300ms under typical load.
+* Scalability: Should scale horizontally (K8s replicas).
+* Reliability: DB transactional guarantees, optimistic locking on updates.
+* Monitoring: Metrics (Prometheus), logs (structured JSON), distributed tracing (OTEL).
+* Deployment: Docker container, K8s manifests, CI/CD with GitHub Actions.
+
+---
+
+## 5. Technology Stack
+
+* Backend Framework: Spring Boot 3.3 (Java 21)
+* Database: PostgreSQL (with Flyway for DB migrations)
+* Messaging: Kafka (Bitnami docker image for local)
+* Security: Spring Security (Basic Auth → JWT in v2)
+* Documentation: Swagger/OpenAPI via `springdoc-openapi`
+* Testing: JUnit 5 + Testcontainers
+* Deployment: Docker, Kubernetes (minikube/kind → AWS EKS)
+* CI/CD: GitHub Actions
+
+---
+
+## 6. High-Level Architecture
+
+Monolithic → Modular Monolith → Microservices
+
+* Controllers (REST endpoints)
+* Services (business logic, CSV ingestion, audit, events)
+* Repositories (data access using JPA)
+* Entities (JPA model mapped to DB)
+* DTOs & Mappers (API input/output separation)
+* Config (Security, Kafka, OpenAPI, DB)
+
+---
+
+✅ With this SRS in hand, we’re aligned on what to build.
+Next step is Project Structure → I’ll explain exactly where each piece of code belongs, and why.
+
+---
+
+👉 Do you want me to write the industry-standard folder/package structure (with explanations: what belongs in `controller/`, `service/`, `repository/`, etc.), before we actually start coding?
+
+->YES
+
+----------------------------------------------------------------------------------------------------
+
+industry-standard project structure
+===================================
+
+I’ll explain it as if you were in a real IT team, so you know where code goes, why it belongs there, and which Spring Boot features we use.
+
+---
+
+# Step 2: Project Structure (Industry Standard)
+
+Your project will be named:
+`instrument-refdata-service`
+
+Inside STS (Spring Tool Suite) → when you create a Spring Boot project, it generates a structure like this:
+
+```
+instrument-refdata-service/
+ ├── src/
+ │   ├── main/
+ │   │   ├── java/com/example/refdata/
+ │   │   │    ├── RefdataApplication.java   <-- main bootstrapping class
+ │   │   │    ├── config/                   <-- configuration classes
+ │   │   │    ├── controller/               <-- REST controllers (API layer)
+ │   │   │    ├── dto/                      <-- DTOs (input/output payloads)
+ │   │   │    ├── entity/                   <-- JPA entities (DB tables)
+ │   │   │    ├── exception/                <-- custom exceptions + handler
+ │   │   │    ├── mapper/                   <-- mappers (Entity ↔ DTO, MapStruct)
+ │   │   │    ├── repository/               <-- Spring Data JPA repositories
+ │   │   │    ├── service/                  <-- business services
+ │   │   │    ├── util/                     <-- validators, helpers
+ │   │   │    └── events/                   <-- domain events & Kafka publishers
+ │   │   └── resources/
+ │   │        ├── application.yaml          <-- config (profiles: dev, prod, test)
+ │   │        ├── db/migration/             <-- Flyway migration scripts (V1__init.sql, etc.)
+ │   │        └── logback-spring.xml        <-- logging config (JSON, rolling)
+ │   ├── test/java/com/example/refdata/     <-- unit & integration tests
+ │   │    ├── integration/                  <-- integration tests w/ Testcontainers
+ │   │    └── unit/                         <-- unit tests (services, utils, validators)
+ ├── .github/workflows/                     <-- GitHub Actions CI/CD pipelines
+ ├── docker/                                <-- Dockerfile, docker-compose.yaml
+ ├── k8s/                                   <-- Kubernetes manifests (deployment, service, configmap, secret, ingress)
+ ├── helm/                                  <-- Helm chart (optional later)
+ ├── pom.xml                                <-- Maven build file
+ └── README.md                              <-- project documentation
+```
+
+---
+
+## Explanation of Each Package
+
+ 1. config/
+
+* Holds Spring Boot configuration beans
+* Examples:
+
+  * `SecurityConfig.java` → Spring Security setup
+  * `KafkaConfig.java` → Kafka producer/consumer beans
+  * `AuditingConfig.java` → JPA Auditing (`@EnableJpaAuditing`)
+  * `OpenAPIConfig.java` → Swagger setup
+* These are loaded automatically by Spring Boot because they’re annotated with `@Configuration`.
+
+---
+
+ 2. controller/
+
+* Holds REST API endpoints.
+* Example: `InstrumentController.java` with methods like:
+
+  ```java
+  @GetMapping("/api/v1/instruments/{id}")
+  public ResponseEntity<InstrumentDto> getById(@PathVariable UUID id) { ... }
+  ```
+* Annotated with `@RestController`.
+* Should only handle HTTP layer logic: validation, request mapping, calling services.
+* No DB or business logic here.
+
+---
+
+ 3. dto/
+
+* DTO = Data Transfer Object.
+* Purpose: keep your API layer clean and separate from DB layer.
+* Example:
+
+  ```java
+  public record InstrumentDto(UUID id, String isin, String ticker, String exchange, String currency) {}
+  ```
+* Use `@Valid` annotations here for input validation.
+
+---
+
+ 4. entity/
+
+* Contains JPA entities (database tables).
+* Example:
+
+  ```java
+  @Entity
+  public class Instrument { ... }
+  ```
+* Mapped with Hibernate annotations (`@Entity`, `@Column`, `@Id`).
+* Represent the persistence model, not directly exposed to clients.
+
+---
+
+ 5. exception/
+
+* Central place for exceptions and global error handling.
+* Example:
+
+  * `InstrumentNotFoundException.java`
+  * `GlobalExceptionHandler.java` with `@ControllerAdvice` → returns Problem JSON (RFC 7807).
+
+---
+
+ 6. mapper/
+
+* Converts Entity ↔ DTO.
+* Industry uses MapStruct (`@Mapper(componentModel = "spring")`).
+* Example: `InstrumentMapper.java` → maps `Instrument` → `InstrumentDto`.
+
+---
+
+ 7. repository/
+
+* Contains Spring Data JPA repositories.
+* Example:
+
+  ```java
+  public interface InstrumentRepository extends JpaRepository<Instrument, UUID>, JpaSpecificationExecutor<Instrument> {}
+  ```
+* Responsible only for database queries.
+* No business logic here.
+
+---
+
+ 8. service/
+
+* Contains business logic.
+* Example:
+
+  * `InstrumentService.java` (CRUD operations, CSV ingestion, publishing events).
+* Annotated with `@Service`.
+* This is where transactions (`@Transactional`) are managed.
+* Services call repositories, perform validations, publish events, etc.
+
+---
+
+ 9. util/
+
+* Contains helper classes.
+* Example:
+
+  * `ISINValidator.java` → validate ISIN format.
+* Keeps reusable utility code separate from services.
+
+---
+
+ 10. events/
+
+* Handles domain events and Kafka publishing.
+* Example:
+
+  * `InstrumentUpdatedEvent.java` (POJO event object).
+  * `KafkaPublisher.java` (sends event to Kafka topic).
+* Keeps eventing concerns separated from business logic.
+
+---
+
+ 11. resources/db/migration/
+
+* Stores Flyway DB migration scripts (`V1__init.sql`, `V2__add_indexes.sql`, etc.).
+* Ensures schema is version-controlled and portable.
+* Flyway runs them automatically on app startup.
+
+---
+
+ 12. test/
+
+* unit/ → pure Java tests (mappers, validators, services with mocks).
+* integration/ → database + Kafka tests using Testcontainers.
+* Mirrors `main/java` package structure.
+
+---
+
+✅ With this structure, you’ll have a project that looks like a professional Spring Boot project in a real bank/fintech/enterprise environment.
+
+---
+
+👉 Next Step:
+I can scaffold the project with `pom.xml` and empty packages (so you can import in STS and see the structure right away), and then we’ll add Flyway + entity + repository as first code step.
+
+Do you want me to generate the initial scaffold (Maven `pom.xml` + package structure) now?
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+prompt: Sure, but before that can you give a roadmap for this project So that we wont get distracted from our actual goal
+
+-->>
+Excellent point 🙌 — having a roadmap will keep us focused and make sure we gradually build everything from basic → advanced without losing track.
+
+Here’s a professional roadmap (like you’d find in a real project plan), broken into phases:
+
+---
+
+# 🚀 Instrument Reference Data Service – Roadmap
+										 ========
+## Phase 1: Foundation (Monolith – Core CRUD Service)
+
+1. Project Setup
+
+   * Generate Spring Boot project (`instrument-refdata-service`)
+   * Setup Maven `pom.xml` with dependencies (Spring Web, JPA, Postgres, Flyway, Lombok, Validation, Testcontainers, OpenAPI, Spring Security)
+   * Create package structure (`controller`, `service`, `repository`, etc.)
+
+2. Database & Migrations
+
+   * Setup Postgres in Docker (via `docker-compose`)
+   * Add Flyway migration script (`V1__init.sql`) for `instrument` table
+
+3. Domain Model & Repository
+
+   * Define `Instrument` entity (`id, isin, cusip, ticker, exchange, currency, createdAt, updatedAt`)
+   * Create `InstrumentRepository` with Spring Data JPA
+
+4. Service Layer
+
+   * `InstrumentService` with CRUD logic
+   * Add validation rules (unique ISIN, CUSIP format check, etc.)
+
+5. Controller Layer
+
+   * `InstrumentController` with REST APIs (`/api/v1/instruments`)
+   * CRUD endpoints (GET, POST, PUT, PATCH, DELETE)
+   * Return DTOs, not entities
+
+6. DTOs & Mapping
+
+   * Create `InstrumentDto` & `InstrumentMapper` (MapStruct)
+
+7. Error Handling
+
+   * Global exception handling with `@ControllerAdvice`
+   * Consistent error response (Problem JSON format)
+
+✅ Milestone: Core service working → CRUD APIs + DB ready + Swagger UI documentation.
+
+---
+
+## Phase 2: Advanced Features (Monolith – Extended Service)
+
+8. Search APIs
+
+   * Implement search (by ISIN, ticker, exchange, currency)
+   * Add pagination + sorting using `JpaSpecificationExecutor`
+
+9. Bulk Upload
+
+   * CSV file upload endpoint
+   * Parse CSV (Apache Commons CSV / OpenCSV)
+   * Validate each row & insert in batch
+   * Return job result (success/failure counts)
+
+10. Auditing
+
+    * Enable JPA Auditing (`createdBy`, `updatedBy`, timestamps)
+    * Store change history in `instrument_audit` table (or Envers)
+
+11. Event Publishing
+
+    * Define `InstrumentUpdatedEvent`
+    * Publish to Kafka topic (`instrument.updated`) when CRUD occurs
+    * For now, if Kafka not running → fallback to logging
+
+12. Security
+
+    * Add Spring Security
+    * Start with in-memory users & basic auth (later upgrade to JWT)
+
+✅ Milestone: Service feature-complete → CRUD + Search + Upload + Audit + Event + Security.
+
+---
+
+## Phase 3: Infrastructure & DevOps
+
+13. Observability
+
+    * Add Spring Boot Actuator endpoints
+    * Integrate Micrometer → Prometheus + Grafana dashboards
+    * Add centralized JSON logging (logback config)
+
+14. Testing
+
+    * Unit tests (Mockito + JUnit 5)
+    * Integration tests with Testcontainers (Postgres, Kafka)
+
+15. Dockerization
+
+    * Write Dockerfile for Spring Boot app
+    * Extend `docker-compose.yml` (Spring Boot + Postgres + Kafka)
+
+16. Kubernetes (Local)
+
+    * Create K8s manifests (deployment, service, configmap, secret, ingress)
+    * Deploy to Minikube/kind
+
+✅ Milestone: Service runs as container + on Kubernetes locally.
+
+---
+
+## Phase 4: CI/CD & Cloud
+
+17. CI/CD Pipeline
+
+    * GitHub Actions pipeline:
+
+      * Build → Run Tests → Package Jar → Build Docker Image → Push to DockerHub → Deploy to K8s
+
+18. Cloud Deployment
+
+    * Deploy to AWS EKS (or any managed Kubernetes)
+    * Use RDS for Postgres, MSK for Kafka
+
+19. Config & Secrets Management
+
+    * Externalize configs (Spring Cloud Config / AWS Parameter Store)
+    * Use K8s secrets for DB creds, Kafka creds
+
+20. Microservice Split (Optional – Advanced)
+
+    * Break monolith into microservices:
+
+      * `instrument-service` (CRUD + Search)
+      * `upload-service` (CSV ingestion)
+      * `audit-service` (history tracking)
+      * All communicate via REST/Kafka
+
+✅ Final Milestone: Full enterprise-ready microservice architecture, running on cloud, CI/CD enabled.
+
+---
+
+# 📌 Summary Roadmap Flow
+
+* Phase 1 → Core CRUD service
+* Phase 2 → Advanced features (Search, Upload, Audit, Kafka, Security)
+* Phase 3 → Infra & DevOps (Docker, K8s, Monitoring, Testing)
+* Phase 4 → Cloud & Microservices
+
+---
+
+👉 With this roadmap, we’ll stay focused and you’ll have a resume-grade project at the end.
+
+Do you want me to now generate Phase 1 – Step 1 (Project Scaffold + `pom.xml` + folder structure) so you can import it into STS right away?
+
+----------------------------------------------------------------------------------------------------------------------
+
+Starting Development:- using STS
+=====================
+
+## 🛠️ Steps to Setup Project in STS
+
+ 1. Create Project
+
+1. Open STS IDE.
+
+2. Go to File → New → Maven Project.
+
+3. In the wizard:
+
+   * ✅ Check Create a simple project (skip archetype selection)
+   * Group Id → `com.shak`
+   * Artifact Id → `instrument-refdata-service`
+   * Packaging → `jar`
+   * Version → `0.0.1-SNAPSHOT`
+   * Name → `instrument-refdata-service`
+
+4. Finish → It creates a basic Maven project.
+
+---
+
+ 2. Replace pom.xml
+
+1. Open the generated `pom.xml`.
+2. Replace its content with the `pom.xml` I gave you.
+3. Save it → STS will download dependencies (might take a few minutes first time).
+
+---
+
+ 3. Create Package Structure
+
+1. In `src/main/java` → right click → New → Package.
+
+2. Create the following packages under `com.shak.refdata`:
+
+   * `config`
+   * `controller`
+   * `dto`
+   * `entity`
+   * `exception`
+   * `mapper`
+   * `repository`
+   * `service`
+   * `util`
+   * `events`
+
+3. Inside `com.shak.refdata`, create the main class:
+
+```java
+package com.shak.refdata;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class RefdataApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(RefdataApplication.class, args);
+    }
+}
+```
+
+---
+
+ 4. Setup Resources
+
+1. Inside `src/main/resources`:
+
+   * Create `application.yaml` → paste the config I gave.
+   * Create folder → `db/migration/`.
+   * Inside `db/migration`, create empty file `V1__init.sql` (we’ll fill schema soon).
+
+2. Verify resources folder structure:
+
+```
+src/main/resources/
+ ├── application.yaml
+ └── db/migration/V1__init.sql
+```
+
+---
+
+ 5. Build & Run
+	  =============
+1. Right-click project → Run As → Maven Clean
+
+2. Then Run As → Maven Install
+   * Make sure BUILD SUCCESS comes.
+
+3. Run application:
+   * Right-click `RefdataApplication.java` → Run As → Spring Boot App
+
+4. Check logs → You should see:
+
+```
+Started RefdataApplication in X.XXX seconds
+Tomcat started on port 8080
+```
+
+5. Open browser → `http://localhost:8080`
+   * Nothing will show yet (since no controller exists), but app should run fine.
+
+---
+
+ 6. (Optional) Verify Flyway is Active
+In logs you should see something like:
+
+```
+Flyway Community Edition X.X.X by Redgate
+Successfully validated migration script V1__init.sql
+```
+
+(Will fail if `V1__init.sql` is empty — that’s okay for now, we’ll add schema next step).
+
+---
+
+✅ Now your scaffold project is up & running in STS.
+
+---------------------------------------------------------------------------------------
+
+NOW THE PROJECT STRCTURE IS READY
+
+TO BUILD & RUN:
+
+1. Right-click project → Run As → Maven Clean
+2. Then Run As → Maven Install
+Make sure BUILD SUCCESS comes.
+
+Run application:
+Right-click RefdataApplication.java → Run As → Spring Boot App
+
+Check logs → You should see:
+Started RefdataApplication in X.XXX seconds
+Tomcat started on port 8080
+
+Open browser → http://localhost:8080
+Initially, Nothing will show yet (since no controller exists), but app should run fine.
+
+--->>
+IN SHORT:
+1. Restart App → works when only your Java classes or resources changed.
+2. Maven Update / Reimport → required after changing pom.xml (dependencies, plugins, versions).
+3. mvn clean install → full rebuild when:
+	you want to delete old compiled stuff (target/),
+	fix weird cache issues,
+	or build for deployment.
+4. DevTools Hot Reload → auto reloads app on code/config changes (if spring-boot-devtools is in pom.xml).
+
+-----------------------------------------------------------------------------------------------
+
+
+
+
+
+

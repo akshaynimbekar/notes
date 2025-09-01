@@ -1,0 +1,207 @@
+Questions on Project:
+====================
+
+Which framework we are using here? and why?
+-->>>
+We are using **Spring Boot**, not plain Spring.
+---
+
+## 📌 Difference in simple words
+
+### 1. **Spring Framework (Core Spring)**
+
+* It’s the **foundation** (IoC container, DI, AOP, MVC, etc.).
+* You need to configure **everything manually**:
+
+  * DispatcherServlet
+  * DataSource (DB connection)
+  * TransactionManager
+  * ViewResolvers, etc.
+* You usually write a lot of XML or Java-based config.
+* Very powerful, but heavy boilerplate.
+
+### 2. **Spring Boot**
+
+* A **framework built on top of Spring** that makes it easier to build applications.
+* Provides **auto-configuration** → You don’t need to manually configure DataSource, DispatcherServlet, Hibernate, etc.
+* Comes with **starters** (`spring-boot-starter-web`, `spring-boot-starter-data-jpa`) that pull in the right dependencies.
+* Provides **embedded servers** (Tomcat/Jetty/Undertow) → no need to deploy WAR files to an external server.
+* Supports **opinionated defaults** → e.g., if `postgresql` driver is found, Boot configures DataSource automatically.
+* Production-ready with:
+
+  * Actuator (health, metrics)
+  * Easy integration with Docker, Kubernetes, CI/CD
+
+---
+
+## 📌 Why we are using **Spring Boot** for this project?
+
+1. **Faster development**
+
+   * We want to focus on **business logic** (CRUD APIs, events, microservices patterns) not boilerplate configuration.
+
+2. **Microservices standard**
+
+   * In industry, **microservices are almost always built with Spring Boot**, not plain Spring.
+   * Because Boot makes services self-contained (jar + embedded server).
+
+3. **Integration with Cloud/Docker/K8s**
+
+   * Boot apps are **ready for containerization**.
+   * Simple `Dockerfile` + `docker run` works out of the box.
+
+4. **Built-in production features**
+
+   * Actuator endpoints (`/actuator/health`, `/actuator/metrics`) → used in real IT setups.
+   * Auto integration with logging/monitoring tools.
+
+---
+
+✅ So:
+We’re still **using Spring under the hood** (because Spring Boot = Spring + auto-configuration + extras), but we say **“We’re building with Spring Boot”** because that’s the actual framework driving our project.
+
+------------------------------------------------------------------------------------------------------------------
+
+List common terms in banking/capital domain, like instrument, identifier, isin, cusip, equities, bonds and many more.
+-->>>
+Got it 👍 — here’s a **banking & capital markets glossary** of **common terms** you’ll frequently see in **reference data, trading, and capital markets systems** (like your DMSI experience).
+---
+# 📘 Common Terms in Banking / Capital Markets Domain
+
+## **1. Instruments & Identifiers**
+
+* **Instrument** – A tradeable financial asset (equity, bond, derivative, etc.).
+* **Identifier** – A unique code used to identify an instrument.
+* **ISIN (International Securities Identification Number)** – Standard 12-character identifier for securities.
+* **CUSIP** – Identifier used in North America (mainly US & Canada).
+* **SEDOL** – UK-specific security identifier.
+* **RIC (Reuters Instrument Code)** – Identifier used in Thomson Reuters systems.
+* **Bloomberg Ticker / FIGI** – Bloomberg’s identifiers.
+* **Ticker Symbol** – Short code used on an exchange (e.g., AAPL, MSFT).
+* **LEI (Legal Entity Identifier)** – Identifier for organizations/issuers.
+
+---
+
+## **2. Asset Classes**
+
+* **Equities** – Stocks/shares representing ownership in a company.
+* **Bonds / Fixed Income** – Debt instruments issued by governments or corporations.
+* **Derivatives** – Contracts whose value is derived from underlying assets (options, futures, swaps).
+* **FX (Foreign Exchange)** – Currency pairs (e.g., EUR/USD).
+* **Commodities** – Physical assets like oil, gold, wheat traded in markets.
+* **ETFs (Exchange-Traded Funds)** – Basket of securities traded like a stock.
+* **Mutual Funds** – Investment funds pooling money to invest in securities.
+
+---
+
+## **3. Trading & Market Structure**
+
+* **Exchange** – A marketplace where instruments are traded (NYSE, NASDAQ, LSE).
+* **OTC (Over-the-Counter)** – Trading directly between parties, outside exchanges.
+* **Market Data** – Prices, quotes, and reference information about securities.
+* **Bid / Ask / Spread** – Buy price, sell price, and the difference.
+* **Liquidity** – How easily an asset can be bought/sold.
+* **Settlement** – Process of transferring securities and money after a trade.
+* **Clearing House** – Intermediary ensuring trade obligations are met.
+
+---
+
+## **4. Corporate Actions**
+
+* **Dividend** – Payment made by a company to shareholders.
+* **Stock Split / Reverse Split** – Changing the number of shares outstanding.
+* **Merger & Acquisition (M\&A)** – Corporate restructuring impacting securities.
+* **Spin-off** – Creating a new independent company from an existing one.
+
+---
+
+## **5. Risk & Compliance**
+
+* **Credit Risk** – Risk of borrower default.
+* **Market Risk** – Risk of losses due to market price movements.
+* **Operational Risk** – Risk from failed processes/systems.
+* **AML (Anti-Money Laundering)** – Compliance checks to prevent illicit finance.
+* **KYC (Know Your Customer)** – Regulatory process of identifying clients.
+* **Basel III** – Banking regulations on capital requirements and risk.
+* **MiFID II / Dodd-Frank** – Regulatory frameworks for transparency in trading.
+
+---
+
+## **6. Reference Data Concepts**
+
+* **Static Data** – Information that rarely changes (ISIN, issuer, currency).
+* **Dynamic Data** – Market prices, quotes, intraday updates.
+* **Golden Copy** – Master version of data used across systems.
+* **Data Vendor** – Providers like Bloomberg, Refinitiv, ICE, SIX.
+* **Instrument Lifecycle** – Creation, updates (name, currency, mergers), expiration.
+
+---
+
+✅ This set will give you strong **talking points** in interviews — you can tie your **project (Instrument Reference Data Service)** to how banks manage **ISINs, corporate actions, identifiers, and golden copies**.
+
+------------------------------------------------------------------------------------------------------------------
+
+Flyway:
+-->>>
+Flyway is an open-source database migration tool designed to manage and track changes to your database schema in a version-controlled and automated manner. It aims to simplify and streamline the process of evolving your database alongside your application's development.
+
+⚡ Why we need it?
+In projects, the database schema changes over time (new tables, columns, constraints).
+If multiple developers work on the same DB, it’s hard to track “who changed what”.
+In CI/CD, we need a reliable way to automatically apply DB changes when deploying new code.
+
+
+
+🔑 How Flyway Works
+Migration scripts → You write SQL files describing changes to your DB.
+	Example: V1__create_instruments_table.sql
+	Example: V2__add_currency_column.sql
+
+Versioning → Each script starts with V1, V2, V3… so Flyway knows the order.
+Tracking table → Flyway creates a special table in DB (flyway_schema_history) to remember which migrations are already applied.
+Execution → When the app starts (or when you run flyway migrate), Flyway checks:
+
+Which scripts are new?
+Runs only the pending ones.
+---
+Flyway = Database version control.
+You write SQL scripts → Flyway applies them in order → Your DB schema stays in sync with your code.
+
+---
+How Flyway applies this in real life:
+--->>
+Developer writes migration files (V1…V2…V3…) and commits them to Git.
+CI/CD pipeline runs flyway migrate during deployment.
+Flyway checks its tracking table (flyway_schema_history).
+If DB is fresh → runs V1, V2, V3 in order.
+If DB already has V1 & V2 → runs only V3.
+Result → DB is always in sync with your code, no manual DBA work.
+
+---
+What if you don’t use Flyway?
+
+If disabled:
+You rely on Hibernate’s ddl-auto (update, create, validate, etc.) to update the schema.
+Good for development (quick prototyping).
+Bad for production (can cause accidental data loss, uncontrolled schema drift).
+Schema changes need to be applied manually (running SQL scripts by hand).
+Harder to keep environments (dev, staging, prod) in sync.
+More error-prone for teams.
+
+---------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

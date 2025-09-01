@@ -1,0 +1,918 @@
+Notes:
+=======================
+
+IMP's:
+-> better to write getter setter and override toString than using lombok
+->
+
+
+
+=======================
+GIT
+
+1. Fetch all branches from GitHub
+	git fetch origin
+
+2. List branches again
+	git branch -a
+
+3. To check logs
+	git log
+
+4. Future changes
+After making changes, you just do:
+	git add .
+	git commit -m "Brief message describing changes"
+	git push
+
+5. Switch to your new branch
+If you already created it locally:
+	git checkout <branch-name>
+
+If it exists only on remote (e.g., created on GitHub):
+	git fetch origin
+	git checkout -b <branch-name> origin/<branch-name>
+
+6. Verify which branch you’re on
+	git status
+(or)
+	git branch
+
+7. Check differences between two branches
+	To see if main and your new branch differ:
+		git diff main..<branch-name>	
+	Shows line-by-line code differences.
+
+	To just check which files differ (without showing the content changes):
+		git diff --name-status main..<branch-name>
+
+8. Cherry Picking:
+	Cherry-picking in Git = taking a specific commit from one branch and applying it to another branch, without merging the entire branch.
+
+	Example: If you want only that README change (and not other changes from main):
+
+	Find the commit hash of the README change:
+	git log main -- README.md
+	Copy the commit hash (e.g., abc123).
+
+	Apply it to your branch:
+		git checkout <your-branch-name>
+		git cherry-pick abc123
+
+
+============================================================================
+Concepts used in `Instrument.java` and `InstrumentRepository.java`:
+
+ 📌 1. `Instrument.java` (Entity Class)
+
+ ✅ Purpose: This class represents a *database table* in JPA/Hibernate. Each row in the `instrument` table will map to an instance of this class.
+
+🔹 Key Annotations
+1.`@Entity`
+	* Marks this class as a *JPA entity* (a persistent object that Hibernate maps to a database table).
+	* Without this, Hibernate won’t recognize it.
+
+2.`@Table(name = "instrument")`
+	* Specifies the table name in DB (`instrument`).
+	* If omitted, Hibernate would use the class name (`instrument`) by default (case-sensitive depending on DB).
+
+---
+🔹 Lombok Annotations
+3. `@Getter` → generates getters for all fields.
+4. `@Setter` → generates setters for all fields.
+5. `@NoArgsConstructor` → generates a no-argument constructor.
+6. `@AllArgsConstructor` → generates a constructor with all fields.
+7. `@Builder` → lets us use *builder pattern* (useful when creating objects in service/test code).
+
+👉 These remove boilerplate code (industry best practice).
+👉 Example:
+```java
+Instrument i = Instrument.builder()
+    .isin("US1234567890")
+    .ticker("AAPL")
+    .currency("USD")
+    .build();
+```
+---
+🔹 Field-Level Mappings
+
+8. `@Id`
+	* Marks the *primary key*.
+
+9. `@GeneratedValue(strategy = GenerationType.IDENTITY)`
+	* Auto-generates the PK using the DB’s identity column (Postgres `BIGSERIAL`).
+	* `IDENTITY` is common in Postgres & MySQL.
+
+10. `@Column(...)`
+	* Fine-tunes how fields map to table columns.
+	* `length` → max size of VARCHAR.
+	* `nullable = false` → cannot be null.
+	* `unique = true` → adds DB constraint for uniqueness.
+	* `name = "created_at"` → sets custom column name.
+	
+🔹 Timestamps (`createdAt`, `updatedAt`)
+	* `LocalDateTime` → represents timestamp in Java.
+	* `updatable = false` → prevents Hibernate from modifying `createdAt`.
+
+🔹 Entity Lifecycle Callbacks
+
+11. `@PrePersist`
+	* Runs before entity is *inserted* into DB.
+	* Here we set `createdAt` and `updatedAt` to `now()`.
+
+12. `@PreUpdate`
+	* Runs before entity is *updated*.
+	* Updates `updatedAt`.
+	👉 This ensures *audit fields* are auto-populated without manual code.
+
+============================================================================
+
+ 📌 2. `InstrumentRepository.java` (Repository Interface)
+ ✅ Purpose:
+	* This is the *DAO (Data Access Object)* layer in Spring Boot.
+	* It interacts with the DB so services/controllers don’t need to write raw SQL.
+---
+🔹 `JpaRepository<Instrument, Long>`
+	* This interface comes from Spring Data JPA.
+	* By extending `JpaRepository`, we inherit *hundreds of methods for free*.
+
+Examples (already available without writing code):
+```java
+instrumentRepository.findAll();
+instrumentRepository.findById(1L);
+instrumentRepository.save(instrument);
+instrumentRepository.deleteById(5L);
+```
+
+🔹 Custom Finder Methods
+	Spring Data JPA uses *method naming conventions* to generate queries automatically.
+
+```java
+Optional<Instrument> findByIsin(String isin);
+Optional<Instrument> findByCusip(String cusip);
+Optional<Instrument> findByTicker(String ticker);
+```
+	👉 These translate into SQL like:
+	```sql
+	SELECT * FROM instrument WHERE isin = ?;
+	SELECT * FROM instrument WHERE cusip = ?;
+	```
+* `Optional<T>` is used because the record *may or may not exist*.
+* This avoids `NullPointerException` and forces caller to handle “not found” properly.
+
+---
+
+ 📌 Layering Recap (Industry Standard)
+
+ *Entity* → maps Java object to DB table.
+ *Repository* → handles DB access with JPA methods (no SQL writing needed).
+  
+  Later we’ll add:
+   *Service Layer* → business logic.
+   *Controller Layer* → REST APIs for client access.
+
+✅ So now your project has a *persistent entity + repository*, meaning you can store and fetch instruments in Postgres.
+
+============================================================================
+✅ Concepts Covered in `InstrumentService`
+
+1. *Service Layer Pattern*
+
+   * We introduced a dedicated *`InstrumentService`* class instead of directly calling the repository from the controller.
+   * This follows the *Service Layer Design Pattern*, widely used in enterprise apps.
+   * Benefits:
+     * Keeps *business logic separate* from API layer.
+     * Makes unit testing easier (mock the service independently).
+     * Allows scaling later (e.g., add caching, validations, events in service without touching controller).
+
+2. *Dependency Injection (Constructor Injection)*
+   ```java
+   private final InstrumentRepository instrumentRepository;
+
+   public InstrumentService(InstrumentRepository instrumentRepository) {
+       this.instrumentRepository = instrumentRepository;
+   }
+   ```
+
+    * Spring injects the `InstrumentRepository` bean into the service.
+    * *Constructor injection* (preferred way) makes the class *immutable* and easier to test.
+    * Avoids pitfalls of *field injection (@Autowired)* like hidden dependencies.
+
+3. *Spring Data JPA Usage*
+    * Service calls `instrumentRepository.save()` / `findAll()` / `findById()` → these come from Spring Data JPA.
+    * No need to write SQL → repository interfaces + JPA do it for us.
+    * Service is thin here but can grow to handle business validations (e.g., “ISIN must be unique”).
+
+4. *Optional<T>*
+   ```java
+   public Optional<Instrument> getInstrumentById(Long id)
+   ```
+   * We return `Optional` from repository/service to handle “record not found” cases safely instead of null.
+   * Prevents `NullPointerException` and forces caller to handle missing values.
+
+============================================================================
+
+✅ Concepts Covered in `InstrumentController`
+
+1. *REST Controller*
+   ```java
+   @RestController
+   @RequestMapping("/api/instruments")
+   ```
+
+   * `@RestController` = `@Controller + @ResponseBody`.
+   * Every method returns JSON by default.
+   * `@RequestMapping` defines a *base URL* for all endpoints in this controller.
+
+2. *HTTP Method Mappings*
+   * `@PostMapping` → Create or Update Instrument (POST = create).
+   * `@GetMapping` → Fetch all or specific instrument.
+   * `@DeleteMapping` → Delete instrument.
+   * Follows *REST principles* (mapping CRUD to HTTP verbs).
+
+3. *Path Variables & Request Body*
+   * `@PathVariable` → extract values from the URL (e.g., `/isin/{isin}`).
+   * `@RequestBody` → convert JSON body to a Java object (`Instrument`).
+
+4. *ResponseEntity*
+   ```java
+   return ResponseEntity.ok(instrumentService.saveInstrument(instrument));
+   ```
+   * `ResponseEntity` lets us control:
+     * HTTP status codes (`200 OK`, `404 Not Found`, `204 No Content`).
+     * Response body (the JSON object).
+   * Industry best practice (instead of returning raw objects).
+
+5. *Error Handling via Optional*
+   ```java
+   return instrumentService.getInstrumentById(id)
+           .map(ResponseEntity::ok)
+           .orElse(ResponseEntity.notFound().build());
+   ```
+  * Clean way to handle “record not found”.
+  * Uses Java 8+ `Optional.map()` + `orElse`.
+
+
+🏆 Industry Best Practices Demonstrated
+	 *Layered Architecture* → Controller → Service → Repository → Database.
+	 *Separation of Concerns* → each layer has one responsibility.
+	 *Clean HTTP Responses* → using `ResponseEntity`.
+	 *Extensibility* → we can add logging, validation, events in service later without touching controller.
+	 *Testability* → each layer can be tested in isolation.
+
+
+> “Why did you create a service instead of calling the repository directly from the controller?”
+answer: “To separate business logic from web layer, follow layered architecture, make testing easier, and keep code extensible for future requirements.”
+
+============================================================================
+📂 dto/InstrumentRequestDto.java
+
+DTO (Request):
+	Represents the input contract → what client sends to API.
+	Example: when someone hits POST /instruments, this DTO is deserialized from JSON.
+
+Validation Annotations (Jakarta Validation):
+	@NotBlank: field cannot be null/empty.
+	@Size: enforces length (ISIN always 12 chars).
+	@Data: applied to a class, @Data automatically generates:Getter, Setter methods for all non-final fields in the class, A toString(), Appropriate equals() and hashCode() implementations,A constructor that initializes all final fields, as well as any non-final fields marked with @NonNull that do not have an initializer.
+	
+	These ensure data integrity at API boundary before it even reaches Service layer.
+
+Lombok (@Getter, @Setter):
+	Removes boilerplate (no need to manually write getters/setters).
+
+👉 Why not include id, createdAt, etc.?
+	Because client should not set those — they’re generated by DB/audit logic.
+
+----------------------------------------------------------------------------
+📂 dto/InstrumentResponseDto.java
+
+DTO (Response):
+	Represents the output contract → what API returns to client.
+	Includes id (generated after save).
+	Includes createdAt, updatedAt (useful for auditing).
+
+Separation of Concerns:
+	Request DTO = client input.
+	Response DTO = system output.
+	This separation gives flexibility: e.g., tomorrow you can mask sensitive data in responses but still keep it in DB.
+
+----------------------------------------------------------------------------
+📂 mapper/InstrumentMapper.java
+
+Mapper Layer:
+	Converts between Entity ↔ DTO.
+		toEntity: takes client input (Request DTO) → builds JPA entity for DB.
+		toDto: takes entity from DB → builds Response DTO for API output.
+
+Why separate mapper class instead of doing in Service?
+	Keeps Service focused on business logic.
+	Keeps Controller clean (no DB logic there).
+	Makes mapping reusable across controllers.
+	Tomorrow, you can swap this with MapStruct (industry-standard mapper generator) without touching Service code.
+
+Example:
+	Instrument instrument = InstrumentMapper.toEntity(requestDto);
+→ Converts API input to DB entity.
+
+Later, we can use MapStruct (industry standard) instead of manual code.
+
+----------------------------------------------------------------------------
+API Flow with These Classes:
+Example: POST /api/instruments
+	Client sends JSON → Spring maps it into InstrumentRequestDto.
+	(Validation happens here via annotations).
+	Controller calls Mapper.toEntity(dto) → builds Instrument.
+	Service saves entity to DB.
+	Service returns Entity → Controller calls Mapper.toDto(entity).
+	API responds with JSON shaped like InstrumentResponseDto.
+
+✅ In short:
+InstrumentRequestDto = safe API input.
+InstrumentResponseDto = clean API output.
+InstrumentMapper = glue between API layer (DTOs) and DB layer (Entities).
+----------------------------------------------------------------------------
+Importants:
+
+1. Why DTO Layer?
+	Entities (JPA classes) = mirror your DB tables. They may have sensitive fields (password, audit, internal IDs). Exposing them directly in REST = risky.
+	DTOs (Data Transfer Objects) = safe “API contract”. You decide what goes in (request DTO) and what goes out (response DTO).
+
+👉 Example:
+	A POST /instruments RequestDTO should not contain id, createdAt.
+	A GET /instruments ResponseDTO can include those (read-only).
+
+	So DTOs decouple API from DB model. Tomorrow if DB schema changes, your API contract stays stable. That’s why industry projects always use DTOs.
+
+
+3. then Why Service Layer?
+	The Service Layer is where business logic lives.
+	Controllers should only handle HTTP stuff. Services handle rules like:
+	“Before saving an instrument, check if ISIN already exists.”
+	“When deleting, also publish a Kafka event.”
+	“Audit who made the change.”
+
+👉 If we let Controllers call Repositories directly, APIs would get bloated with business logic.
+
+Flow in One Line (API call path):
+	➡️ Controller (HTTP Request) → DTO Validation → Mapper (DTO → Entity) → Service (business logic) → Repository (DB) → Back to Service → Mapper (Entity → DTO) → Controller (HTTP Response).
+
+👉 Flow:
+	 Request JSON → InstrumentRequestDto (validated with annotations).
+	Controller → calls InstrumentMapper.toEntity(requestDto).
+	Service → instrumentRepository.save(entity) persists to DB.
+	Service returns Entity → mapped via InstrumentMapper.toDto(entity).
+	Controllerreturns ResponseEntity → API responds with JSON including id, createdAt, updatedAt.
+
+✅ Now you have a proper enterprise-grade flow:
+	DTO = API contract
+	Mapper = conversion layer
+	Service = business logic
+	Controller = request/response
+
+============================================================================
+📂 `src/main/java/com/shak/refdata/exception/`
+
+---
+ 1. Why Exception Handling Layer?
+	* In a real system, *things go wrong*: invalid inputs, missing records, DB issues, etc.
+	* Without handling → you get ugly *500 stack traces* in API response.
+	* With handling → you return *clear, standardized JSON error responses* (like an API contract for errors).
+
+---
+ 2. Typical Classes in Exception Package
+	a) *Custom Exceptions*
+	We create *business/domain-specific exceptions* instead of throwing generic Java exceptions.
+
+👉 Example:
+	```java
+	package com.shak.refdata.exception;
+
+	public class ResourceNotFoundException extends RuntimeException {
+		public ResourceNotFoundException(String message) {
+			super(message);
+		}
+	}
+	```
+Usage:
+	* If client requests an `Instrument` that doesn’t exist → throw `ResourceNotFoundException`.
+	* This is cleaner than returning `null`.
+
+---
+	b) *Error Response Model*
+	Define a standard JSON structure for errors.
+
+👉 Example:
+
+	```java
+	package com.shak.refdata.exception;
+
+	import java.time.LocalDateTime;
+
+	public class ApiError {
+		private LocalDateTime timestamp;
+		private int status;
+		private String error;
+		private String message;
+		private String path;
+
+		public ApiError(int status, String error, String message, String path) {
+			this.timestamp = LocalDateTime.now();
+			this.status = status;
+			this.error = error;
+			this.message = message;
+			this.path = path;
+		}
+
+		// Getters & Setters
+	}
+	```
+
+So every error looks like:
+
+```json
+{
+  "timestamp": "2025-08-25T12:30:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Instrument not found with id: 10",
+  "path": "/api/instruments/10"
+}
+```
+
+---
+
+	c) *Global Exception Handler*
+	Use `@ControllerAdvice` to catch exceptions globally.
+
+👉 Example:
+	```java
+	package com.shak.refdata.exception;
+
+	import org.springframework.http.HttpStatus;
+	import org.springframework.http.ResponseEntity;
+	import org.springframework.web.bind.MethodArgumentNotValidException;
+	import org.springframework.web.bind.annotation.ControllerAdvice;
+	import org.springframework.web.bind.annotation.ExceptionHandler;
+
+	import jakarta.servlet.http.HttpServletRequest;
+
+	@ControllerAdvice
+	public class GlobalExceptionHandler {
+
+		// Handle ResourceNotFoundException
+		@ExceptionHandler(ResourceNotFoundException.class)
+		public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
+			ApiError error = new ApiError(
+					HttpStatus.NOT_FOUND.value(),
+					"Not Found",
+					ex.getMessage(),
+					request.getRequestURI()
+			);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+		}
+
+		// Handle Validation Errors
+		@ExceptionHandler(MethodArgumentNotValidException.class)
+		public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex, HttpServletRequest request) {
+			String message = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+			ApiError error = new ApiError(
+					HttpStatus.BAD_REQUEST.value(),
+					"Validation Error",
+					message,
+					request.getRequestURI()
+			);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+		}
+
+		// Handle Generic Exceptions
+		@ExceptionHandler(Exception.class)
+		public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest request) {
+			ApiError error = new ApiError(
+					HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					"Internal Server Error",
+					ex.getMessage(),
+					request.getRequestURI()
+			);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+		}
+	}
+	```
+
+---
+
+ 3. Flow of Exception Handling in API
+	1. User hits API with bad input (`POST /instruments` with blank ISIN).
+	2. Validation fails (`@NotBlank` in DTO) → Spring throws `MethodArgumentNotValidException`.
+	3. `GlobalExceptionHandler` catches it.
+	4. Converts to *clean JSON response* using `ApiError`.
+	5. Returns with correct HTTP status (400 Bad Request).
+
+---
+
+ 4. Industry Benefits
+	* ✅ *Consistency* → all errors look the same.
+	* ✅ *Separation of concerns* → controllers only handle success paths.
+	* ✅ *Debugging made easier* → every error includes `timestamp` + `path`.
+	* ✅ *Future extensibility* → you can add error codes for frontend apps.
+
+---
+
+💡 So, in summary:
+
+* *Custom Exceptions* → business/domain errors.
+* *ApiError class* → standard error response format.
+* *GlobalExceptionHandler* → centralizes error handling using `@ControllerAdvice`.
+
+---
+
+Do you want me to *implement this exception package fully in your project structure* (files with code) so you can copy-paste and test, or just keep it as a concept for now?
+
+----------------------------------------------------------------------------
+Controller after adding Dto and exception classes:
+
+Code Changes in Controller
+
+Let’s see before vs after:
+
+Before (simple entity-based)
+@GetMapping("/{id}")
+public ResponseEntity<Instrument> getInstrumentById(@PathVariable Long id) {
+    return instrumentService.getInstrumentById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+}
+
+After (with DTO + exception)
+@GetMapping("/{id}")
+public ResponseEntity<InstrumentResponseDto> getInstrumentById(@PathVariable Long id) {
+    Instrument instrument = instrumentService.getInstrumentById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Instrument not found with id: " + id));
+    return ResponseEntity.ok(InstrumentMapper.toDto(instrument));
+}
+
+🔑 Differences:
+	Instead of returning Instrument directly → now return InstrumentResponseDto.
+	Instead of .orElse(ResponseEntity.notFound()) → throw ResourceNotFoundException.
+	Mapper is applied before sending back response.
+
+🟣 Summary of Controller Responsibilities (after changes)
+	✅ Validate incoming request (@Valid DTO).
+	✅ Call Mapper to transform DTO → Entity.
+	✅ Delegate business logic to Service.
+	✅ Convert result back Entity → DTO.
+	✅ Handle errors via exceptions (no more null/optional juggling).
+
+⚡ In short: Controller is now slim, clean, and API-focused.
+	All business rules = Service.
+	All data conversions = Mapper.
+	All error handling = Centralized Exception Handler.
+
+----------------------------------------------------------------------------
+8. Search APIs
+   * Implement search (by ISIN, ticker, exchange, currency)
+   * Add pagination + sorting using `JpaSpecificationExecutor`
+
+Perfect 👌 — let’s go deep and treat this like an *enterprise-grade design review* with the top 1% engineering mindset.
+We’re not just writing code — we’re designing a *searchable, paginated, scalable read API* the way large-scale reference-data systems do it.
+
+---
+
+# 🔍 Search API Design (for Instruments)
+
+ 1. *The Why*
+	A financial reference-data service is useless if it can’t *query efficiently by business identifiers*.
+
+Typical queries are:
+	* *Exact identifiers* (e.g., “Give me the instrument with ISIN = `US0378331005`”).
+	* *Filtered lists* (e.g., “All instruments traded on NASDAQ in USD”).
+	* *Exploratory queries* (e.g., “All instruments with ticker starting with `AA`”).
+	* *Paginated navigation* (e.g., browse 10 per page).
+	* *Sorted results* (e.g., order by ticker ascending).
+
+This mirrors *real capital markets systems* (Bloomberg, Refinitiv, Markit), where reference data queries need *search + filters + pagination*.
+
+---
+ 2. *The How*
+
+# 🔹 `JpaSpecificationExecutor`
+	Spring Data JPA ships with *`JpaSpecificationExecutor`*, which is basically a *DSL for dynamic query building*.
+	Instead of writing one `findByIsinAndTickerAndExchange(...)` method for every permutation (impossible to scale), we compose *Specifications* at runtime:
+	```java
+	Specification<Instrument> spec = Specification
+		.where(hasIsin(isin))
+		.and(hasTicker(ticker))
+		.and(hasExchange(exchange))
+		.and(hasCurrency(currency));
+	```
+
+Think of it like building a *query tree* dynamically. Each `hasXxx` returns a `Predicate`, and Spring Data compiles that into SQL under the hood.
+
+This is *cleaner than Criteria API* (which is verbose), and avoids *string-concatenated JPQL* (which is unsafe).
+
+
+# 🔹 Pagination & Sorting
+	Spring gives us `Pageable` abstraction:
+
+* `page` → zero-based index
+* `size` → number of records per page
+* `sort` → sort expression (multi-column supported)
+
+Example request:
+	```
+	GET /api/instruments/search?ticker=AAPL&exchange=NASDAQ&page=0&size=10&sort=isin,asc
+	```
+
+This translates into SQL:
+	```sql
+	SELECT * FROM instruments
+	WHERE ticker = 'AAPL'
+	  AND exchange = 'NASDAQ'
+	ORDER BY isin ASC
+	LIMIT 10 OFFSET 0;
+	```
+
+→ That’s enterprise-ready out of the box.
+
+
+# 🔹 DTO + Mapper
+	We map the *JPA Entity → Response DTO* so clients don’t see internal database artifacts.
+
+This ensures:
+	* *Encapsulation* (we can change DB schema without breaking clients).
+	* *Validation* (via Request DTO).
+	* *Future-proofing* (response can enrich with computed fields).
+
+---
+ 3. *The Flow*
+
+Let’s trace a request end-to-end:
+
+# Request
+	```
+	GET /api/instruments/search?isin=US0378331005&currency=USD&page=0&size=5&sort=ticker,desc
+	```
+
+# Controller
+	```java
+	@GetMapping("/search")
+	public ResponseEntity<Page<InstrumentResponseDto>> searchInstruments(
+        @RequestParam(required = false) String isin,
+        @RequestParam(required = false) String ticker,
+        @RequestParam(required = false) String exchange,
+        @RequestParam(required = false) String currency,
+        Pageable pageable) {
+
+    Page<InstrumentResponseDto> result = instrumentService
+            .searchInstruments(isin, ticker, exchange, currency, pageable)
+            .map(InstrumentMapper::toDto);
+
+    return ResponseEntity.ok(result);
+	}
+	```
+
+What happens here?
+	User calls /search?isin=US0378331005&page=0&size=5&sort=ticker,asc.
+	API passes these values down to service.
+	Service builds query.
+	Repository runs it.
+	Results come back.
+
+---
+# Service
+	```java
+	Specification<Instrument> spec = Specification.where(InstrumentSpecification.hasIsin(isin))
+			.and(InstrumentSpecification.hasTicker(ticker))
+			.and(InstrumentSpecification.hasExchange(exchange))
+			.and(InstrumentSpecification.hasCurrency(currency));
+
+	return instrumentRepository.findAll(spec, pageable);
+	```
+	* We combine all filters together like LEGO blocks.
+	  If some values are empty → they are ignored.
+	Here:
+	.where(...) starts with first filter.
+	.and(...) keeps adding filters.
+	pageable tells it page number, size, and sort.
+
+---
+# Repository
+	```java
+	public interface InstrumentRepository extends JpaRepository<Instrument, Long>, JpaSpecificationExecutor<Instrument> {
+	}
+	```
+* Normally, repository only gives us basic things (find by id, find all).
+* We add JpaSpecificationExecutor which allows us to filter results.
+* `JpaSpecificationExecutor` gives us `findAll(Specification, Pageable)`.
+
+
+---
+# Specification
+	```java
+	public static Specification<Instrument> hasIsin(String isin) {
+		return (root, query, cb) ->
+				isin == null ? null : cb.equal(root.get("isin"), isin);
+	}
+	```
+
+* These are little pieces of logic that say:
+👉 "if user gave me a value, filter by it; else ignore."
+
+* If isin == null → no filter applied.
+* If isin = "US0378331005" → SQL WHERE isin = 'US0378331005'.
+
+---
+Example Usage:
+
+1. Search by ISIN:
+GET http://localhost:8080/api/instruments/search?isin=US0378331005
+
+2. Search by ticker + exchange:
+GET http://localhost:8080/api/instruments/search?ticker=AAPL&exchange=NASDAQ
+
+3. Pagination & Sorting:
+GET http://localhost:8080/api/instruments/search?page=0&size=5&sort=ticker,asc
+
+🧱 Step 6: Output (JSON)
+API gives back something like:
+	{
+	  "content": [
+		{
+		  "id": 1,
+		  "isin": "US0378331005",
+		  "ticker": "AAPL",
+		  "exchange": "NASDAQ",
+		  "currency": "USD"
+		}
+	  ],
+	  "pageable": { "pageNumber": 0, "pageSize": 5 },
+	  "totalElements": 1,
+	  "totalPages": 1,
+	  "last": true
+	}
+
+
+👉 content = actual results
+👉 pageable = info about which page
+👉 totalElements = how many total records
+👉 totalPages = how many pages you can go through
+
+🏆 Final Picture
+	Repo → knows how to talk to DB
+	Specification → little filters (ISIN, ticker, etc.)
+	Service → combines filters and adds pagination
+	Controller → exposes it as HTTP GET API
+	Response → paginated JSON
+	
+----------------------------------------------------------------------------
+9. Bulk Upload
+   * CSV file upload endpoint
+   * Parse CSV (Apache Commons CSV / OpenCSV)
+   * Validate each row & insert in batch
+   * Return job result (success/failure counts)
+
+Ways to achieve:
+1. *Synchronous bulk upload*
+2. *Asynchronous bulk upload*
+
+---
+✅ 1. Synchronous Bulk Upload
+---
+* *Synchronous = Happens in one request-response cycle.*
+  Client uploads a CSV file → Server processes the file (parse, validate, save to DB) → Server responds with success/failure report.
+* The client waits until the server finishes.
+* Best when:
+  * File size is *small to medium* (few thousand records).
+  * You want *immediate feedback*.
+  * No need for background job tracking.
+
+---
+
+# ✅ 2. Flow of Synchronous Bulk Upload
+
+ Step 1: Client Sends File
+	* Request: `POST /api/instruments/upload`
+	* Content-Type: `multipart/form-data`
+	* Key: `file` → attach CSV
+
+
+ Step 2: Controller Layer
+	* Accepts file (`MultipartFile`)
+	* Calls `InstrumentService.bulkUpload(file)`
+	*Controller role* = Just a bridge between client & service.
+
+
+ Step 3: Service Layer (Core Logic)
+📂 `InstrumentService.bulkUpload(file)`
+
+1. *Read CSV*
+   * Using `BufferedReader` + `CSVParser` (Apache Commons CSV).
+   * `withFirstRecordAsHeader()` → allows us to use column names (`isin`, `cusip`, etc.) instead of hardcoded indexes.
+
+2. *Iterate Over Records*
+   * For each row, extract fields.
+   * Create `Instrument` entity.
+   * Add to a `List<Instrument>` for batch save.
+
+3. *Validate*
+   * If a row is missing a required field → mark as failure.
+   * Catch exceptions → track error messages.
+
+4. *Persist*
+   * At the end, call `instrumentRepository.saveAll(instruments)`.
+   * Saves all records in one go (batch insert, more efficient than one by one).
+
+5. *Return Result*
+   * Create a `BulkUploadResult` DTO → contains:
+     * `successCount`
+     * `failureCount`
+     * `errors` (list of strings describing failed rows).
+
+
+ Step 4: DTO for Response
+📂 `BulkUploadResult.java`
+	Ensures client always gets a *structured JSON response*.
+
+
+# ✅ 3. Key Concepts Behind the Code
+
+* *`MultipartFile`*
+  * Spring Boot abstraction for handling uploaded files.
+  * Allows reading file stream directly (instead of writing to disk).
+
+* *`Apache Commons CSV`*
+  * Library to parse CSV safely.
+  * Better than `String.split(",")` because it handles quotes, trimming, headers.
+
+* *Batch Insert (`saveAll`)*
+  * Saves a *list of entities in one DB transaction*.
+  * Much faster than multiple `save()` calls.
+
+* *Error Handling*
+  * Wraps row parsing in `try-catch` so one bad record doesn’t stop the whole file.
+
+* *DTO Response*
+  * Separates internal logic from API contract.
+  * Makes response predictable & easy to consume.
+
+----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+============================================================================
+Common Errors and Exceptions:
+
+1. 
+{ "status": 500, "error": "Internal Server Error", "message": "Name for argument of type [java.lang.String] not specified, and parameter name information not available via reflection. Ensure that the compiler uses the '-parameters' flag.", "path": "/api/instruments/search" }
+
+--> This is a common Spring Boot issue with @RequestParam when the project wasn’t compiled with the -parameters flag
+1. Add @RequestParam(name = " ")
+2. If you want to avoid writing name everywhere: Enable -parameters in Maven
+	📂 pom.xml → inside <build><plugins> add: 
+		<plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-compiler-plugin</artifactId>
+		<version>3.11.0</version>
+		<configuration>
+			<compilerArgs>
+				<arg>-parameters</arg>
+			</compilerArgs>
+		</configuration>
+		</plugin>
