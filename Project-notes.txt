@@ -764,7 +764,7 @@ API gives back something like:
 	Controller → exposes it as HTTP GET API
 	Response → paginated JSON
 	
-----------------------------------------------------------------------------
+============================================================================
 9. Bulk Upload
    * CSV file upload endpoint
    * Parse CSV (Apache Commons CSV / OpenCSV)
@@ -799,34 +799,33 @@ Ways to achieve:
  Step 2: Controller Layer
 	* Accepts file (`MultipartFile`)
 	* Calls `InstrumentService.bulkUpload(file)`
-	*Controller role* = Just a bridge between client & service.
+	- *Controller role* = Just a bridge between client & service.
 
 
- Step 3: Service Layer (Core Logic)
-📂 `InstrumentService.bulkUpload(file)`
+ Step 3: Service Layer (Core Logic):
+	📂 `InstrumentService.bulkUpload(file)`
+	1. *Read CSV*
+	   * Using `BufferedReader` + `CSVParser` (Apache Commons CSV).
+	   * `withFirstRecordAsHeader()` → allows us to use column names (`isin`, `cusip`, etc.) instead of hardcoded indexes.
 
-1. *Read CSV*
-   * Using `BufferedReader` + `CSVParser` (Apache Commons CSV).
-   * `withFirstRecordAsHeader()` → allows us to use column names (`isin`, `cusip`, etc.) instead of hardcoded indexes.
+	2. *Iterate Over Records*
+	   * For each row, extract fields.
+	   * Create `Instrument` entity.
+	   * Add to a `List<Instrument>` for batch save.
 
-2. *Iterate Over Records*
-   * For each row, extract fields.
-   * Create `Instrument` entity.
-   * Add to a `List<Instrument>` for batch save.
+	3. *Validate*
+	   * If a row is missing a required field → mark as failure.
+	   * Catch exceptions → track error messages.
 
-3. *Validate*
-   * If a row is missing a required field → mark as failure.
-   * Catch exceptions → track error messages.
+	4. *Persist*
+	   * At the end, call `instrumentRepository.saveAll(instruments)`.
+	   * Saves all records in one go (batch insert, more efficient than one by one).
 
-4. *Persist*
-   * At the end, call `instrumentRepository.saveAll(instruments)`.
-   * Saves all records in one go (batch insert, more efficient than one by one).
-
-5. *Return Result*
-   * Create a `BulkUploadResult` DTO → contains:
-     * `successCount`
-     * `failureCount`
-     * `errors` (list of strings describing failed rows).
+	5. *Return Result*
+	   * Create a `BulkUploadResult` DTO → contains:
+		 * `successCount`
+		 * `failureCount`
+		 * `errors` (list of strings describing failed rows).
 
 
  Step 4: DTO for Response
@@ -856,6 +855,136 @@ Ways to achieve:
   * Makes response predictable & easy to consume.
 
 ----------------------------------------------------------------------------
+ 🚦 Why Asynchronous Bulk Upload?
+
+* *Synchronous (blocking)*:
+  * Client uploads a CSV.
+  * API parses + saves all rows before responding.
+  * If file is large (say 10,000+ rows), the client waits (can timeout).
+  * Good for *small uploads*, bad for scalability.
+
+* *Asynchronous (non-blocking)*:
+  * Client uploads a CSV.
+  * API immediately creates a *job record* (`PENDING`) and returns jobId.
+  * A *background thread* picks up the file, processes it, and updates job status.
+  * Client can check progress via `/status/{jobId}`.
+  * Standard in *enterprise apps* (batch imports, ETL, data migration).
+
+---
+# 🏗️ Key Concepts in Our Implementation"
+
+# 1. Job Tracking
+	We created an *entity `BulkUploadJob`* to store:
+	* `status` (PENDING, IN\_PROGRESS, COMPLETED, FAILED)
+	* counts (success/failure rows)
+	* error log
+	* timestamps
+
+📍 This makes the process *auditable* and *trackable*.
+
+
+# 2. Async Execution with `@Async`
+	Spring Boot lets us run methods in a *background thread pool* using `@Async`.
+	We also enable it with `@EnableAsync` at the service level.
+	
+	```java
+	@Async
+	public CompletableFuture<Void> processJob(Long jobId, MultipartFile file) {
+		// runs in background
+	}
+	```
+👉 Benefits:
+	* Immediate HTTP response to client (no waiting).
+	* Processing happens in a separate thread.
+	* Client polls for status.
+
+
+# 3. DTO Layer
+	We don’t expose JPA entities directly.
+	Instead, we map `BulkUploadJob` → `BulkUploadJobResponse` DTO for API response
+	This ensures *API stability* even if our entity changes.
+
+
+# 4. File Parsing (CSV)
+	We reused *Apache Commons CSV* parser (same as synchronous upload), but wrapped in a background job:
+
+	```java
+	CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+		.withFirstRecordAsHeader()
+		.withIgnoreHeaderCase()
+		.withTrim());
+
+	for (CSVRecord record : csvParser) {
+		try {
+			Instrument instrument = new Instrument();
+			instrument.setIsin(record.get("isin"));
+			// set other fields...
+			instruments.add(instrument);
+			successCount++;
+		} catch (Exception e) {
+			failureCount++;
+			errorLog.append("Row ").append(record.getRecordNumber())
+					.append(": ").append(e.getMessage()).append("\n");
+		}
+	}
+	instrumentRepository.saveAll(instruments);
+	```
+	📍 We batch save instruments for performance.
+
+
+# 5. Controller Layer
+	The controller gives *two endpoints*:
+
+* *Start job* (`POST /upload/async`)
+  * Creates job in DB.
+  * Immediately returns jobId + status = PENDING.
+  * Starts async job processing.
+
+	```java
+	@PostMapping("/upload/async")
+	public ResponseEntity<BulkUploadJobResponse> uploadInstrumentsAsync(@RequestParam("file") MultipartFile file) {
+		BulkUploadJob job = instrumentService.createJob(file.getOriginalFilename());
+		instrumentService.processJob(job.getId(), file); // async processing
+		return ResponseEntity.ok(new BulkUploadJobResponse(...));
+	}
+	```
+
+* *Check job status* (`GET /upload/status/{jobId}`)
+  * Returns job status + success/failure counts.
+	```java
+	@GetMapping("/upload/status/{jobId}")
+	public ResponseEntity<BulkUploadJobResponse> getJobStatus(@PathVariable Long jobId) {
+		return ResponseEntity.ok(instrumentService.getJobStatus(jobId));
+	}
+	```
+---
+# 📊 How It Works in Practice
+
+1. Upload a CSV via Postman.
+   Response (immediate):
+
+   ```json
+   {
+     "jobId": 1,
+     "filename": "instruments.csv",
+     "status": "PENDING"
+   }
+   ```
+2. Behind the scenes → `processJob()` starts parsing and saving.
+3. Query `/status/1` later:
+
+   ```json
+   {
+     "jobId": 1,
+     "filename": "instruments.csv",
+     "status": "COMPLETED",
+     "successCount": 100,
+     "failureCount": 2,
+     "errors": "Row 23: invalid ISIN"
+   }
+   ```
+
+============================================================================
 
 
 

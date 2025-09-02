@@ -905,7 +905,7 @@ US02079K3059,02079K305,GOOGL,NASDAQ,USD
 * `POST http://localhost:8080/api/instruments/upload`
 * Select *form-data* → key: `file` (type: File) → upload `instruments.csv`.
 
-### Example Response:
+ Example Response:
 
 ```json
 {
@@ -926,6 +926,306 @@ US02079K3059,02079K305,GOOGL,NASDAQ,USD
 * [ ] Docker + CI/CD
 
 ----------------------------------------------------------------------------
+2. Asynchronous Bulk Upload – Design
+
+# Flow:
+
+1. User uploads CSV → API *stores file & creates a Job record* (status = `PENDING`).
+2. A *background thread* processes the file (validate → save to DB).
+3. Job record updated (`IN_PROGRESS` → `COMPLETED`/`FAILED`) with stats.
+4. User can *check job status* via API (`GET /upload/status/{jobId}`).
+
+This mimics real IT industry projects (Job orchestration).
+
+---
+
+# ✅ Step 1: Create Job Entity
+	📂 `entity/BulkUploadJob.java`
+
+	```java
+	package com.shak.refdata.entity;
+
+	import jakarta.persistence.*;
+	import java.time.LocalDateTime;
+
+	@Entity
+	@Table(name = "bulk_upload_jobs")
+	public class BulkUploadJob {
+
+		@Id
+		@GeneratedValue(strategy = GenerationType.IDENTITY)
+		private Long id;
+
+		private String filename;
+
+		@Enumerated(EnumType.STRING)
+		private JobStatus status;
+
+		private int successCount;
+		private int failureCount;
+
+		@Lob
+		private String errors;  // store errors as JSON string or plain text
+
+		private LocalDateTime createdAt;
+		private LocalDateTime updatedAt;
+
+		public BulkUploadJob() {}
+
+		public BulkUploadJob(String filename, JobStatus status) {
+			this.filename = filename;
+			this.status = status;
+			this.createdAt = LocalDateTime.now();
+			this.updatedAt = LocalDateTime.now();
+		}
+
+		// Getters and setters...
+	}
+	```
+
+
+# ✅ Step 2: Job Status Enum
+	📂 `entity/JobStatus.java`
+
+	```java
+	package com.shak.refdata.entity;
+
+	public enum JobStatus {
+		PENDING,
+		IN_PROGRESS,
+		COMPLETED,
+		FAILED
+	}
+	```
+
+---
+
+# ✅ Step 3: Job Repository
+
+📂 `repository/BulkUploadJobRepository.java`
+
+	```java
+	package com.shak.refdata.repository;
+
+	import com.shak.refdata.entity.BulkUploadJob;
+	import org.springframework.data.jpa.repository.JpaRepository;
+
+	public interface BulkUploadJobRepository extends JpaRepository<BulkUploadJob, Long> {
+	}
+	```
+
+
+# ✅ Step 4: DTOs for Job Response
+	📂 `dto/BulkUploadJobResponse.java`
+
+	```java
+	package com.shak.refdata.dto;
+
+	import com.shak.refdata.entity.JobStatus;
+	import java.time.LocalDateTime;
+
+	public class BulkUploadJobResponse {
+		private Long jobId;
+		private String filename;
+		private JobStatus status;
+		private int successCount;
+		private int failureCount;
+		private String errors;
+		private LocalDateTime createdAt;
+		private LocalDateTime updatedAt;
+
+		public BulkUploadJobResponse(Long jobId, String filename, JobStatus status,
+									 int successCount, int failureCount,
+									 String errors, LocalDateTime createdAt, LocalDateTime updatedAt) {
+			this.jobId = jobId;
+			this.filename = filename;
+			this.status = status;
+			this.successCount = successCount;
+			this.failureCount = failureCount;
+			this.errors = errors;
+			this.createdAt = createdAt;
+			this.updatedAt = updatedAt;
+		}
+
+		// getters & setters...
+	}
+	```
+
+
+# ✅ Step 5: Service Layer
+
+📂 `InstrumentService.java`
+
+```java
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Service;
+import java.util.concurrent.CompletableFuture;
+
+@Service
+@EnableAsync
+public class InstrumentService {
+
+    private final InstrumentRepository instrumentRepository;
+    private final BulkUploadJobRepository jobRepository;
+
+    public InstrumentService(InstrumentRepository instrumentRepository, BulkUploadJobRepository jobRepository) {
+        this.instrumentRepository = instrumentRepository;
+        this.jobRepository = jobRepository;
+    }
+
+    public BulkUploadJob createJob(String filename) {
+        BulkUploadJob job = new BulkUploadJob(filename, JobStatus.PENDING);
+        return jobRepository.save(job);
+    }
+
+    @Async
+    public CompletableFuture<Void> processJob(Long jobId, MultipartFile file) {
+        BulkUploadJob job = jobRepository.findById(jobId).orElseThrow();
+        job.setStatus(JobStatus.IN_PROGRESS);
+        jobRepository.save(job);
+
+        int successCount = 0;
+        int failureCount = 0;
+        StringBuilder errorLog = new StringBuilder();
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                     .withFirstRecordAsHeader()
+                     .withIgnoreHeaderCase()
+                     .withTrim())) {
+
+            List<Instrument> instruments = new ArrayList<>();
+
+            for (CSVRecord record : csvParser) {
+                try {
+                    Instrument instrument = new Instrument();
+                    instrument.setIsin(record.get("isin"));
+                    instrument.setCusip(record.get("cusip"));
+                    instrument.setTicker(record.get("ticker"));
+                    instrument.setExchange(record.get("exchange"));
+                    instrument.setCurrency(record.get("currency"));
+
+                    instruments.add(instrument);
+                    successCount++;
+                } catch (Exception e) {
+                    failureCount++;
+                    errorLog.append("Row ").append(record.getRecordNumber())
+                            .append(": ").append(e.getMessage()).append("\n");
+                }
+            }
+
+            instrumentRepository.saveAll(instruments);
+
+            job.setStatus(JobStatus.COMPLETED);
+        } catch (Exception e) {
+            job.setStatus(JobStatus.FAILED);
+            errorLog.append("Fatal: ").append(e.getMessage());
+        }
+
+        job.setSuccessCount(successCount);
+        job.setFailureCount(failureCount);
+        job.setErrors(errorLog.toString());
+        job.setUpdatedAt(LocalDateTime.now());
+        jobRepository.save(job);
+
+        return CompletableFuture.completedFuture(null);
+    }
+
+    public BulkUploadJobResponse getJobStatus(Long jobId) {
+        BulkUploadJob job = jobRepository.findById(jobId).orElseThrow();
+        return new BulkUploadJobResponse(
+                job.getId(),
+                job.getFilename(),
+                job.getStatus(),
+                job.getSuccessCount(),
+                job.getFailureCount(),
+                job.getErrors(),
+                job.getCreatedAt(),
+                job.getUpdatedAt()
+        );
+    }
+}
+```
+
+---
+
+# ✅ Step 6: Controller Layer
+
+📂 `InstrumentController.java`
+
+```java
+@PostMapping("/upload/async")
+public ResponseEntity<BulkUploadJobResponse> uploadInstrumentsAsync(@RequestParam("file") MultipartFile file) {
+    BulkUploadJob job = instrumentService.createJob(file.getOriginalFilename());
+    instrumentService.processJob(job.getId(), file); // runs in background
+    return ResponseEntity.ok(
+            new BulkUploadJobResponse(
+                job.getId(),
+                job.getFilename(),
+                job.getStatus(),
+                job.getSuccessCount(),
+                job.getFailureCount(),
+                job.getErrors(),
+                job.getCreatedAt(),
+                job.getUpdatedAt()
+            )
+    );
+}
+
+@GetMapping("/upload/status/{jobId}")
+public ResponseEntity<BulkUploadJobResponse> getJobStatus(@PathVariable Long jobId) {
+    return ResponseEntity.ok(instrumentService.getJobStatus(jobId));
+}
+```
+
+---
+✅ Example Usage in Postman
+
+# Upload CSV (Async): `POST http://localhost:8080/api/instruments/upload/async`
+
+* Form-data → `file` → choose `instruments.csv`
+
+Response:
+	```json
+	{
+	  "jobId": 1,
+	  "filename": "instruments.csv",
+	  "status": "PENDING",
+	  "successCount": 0,
+	  "failureCount": 0,
+	  "errors": null,
+	  "createdAt": "2025-08-25T12:34:56",
+	  "updatedAt": "2025-08-25T12:34:56"
+	}
+	```
+
+# Check Job Status: `GET http://localhost:8080/api/instruments/upload/status/1`
+
+Response:
+	```json
+	{
+	  "jobId": 1,
+	  "filename": "instruments.csv",
+	  "status": "COMPLETED",
+	  "successCount": 3,
+	  "failureCount": 0,
+	  "errors": "",
+	  "createdAt": "2025-08-25T12:34:56",
+	  "updatedAt": "2025-08-25T12:35:10"
+	}
+	```
+---
+✅ This gives you:
+	* *Sync + Async* upload in the same service with seperate api calls
+	* DTO-based responses.
+	* Realistic *job tracking* mechanism.
+
+============================================================================
+
+
+
 
 
 
