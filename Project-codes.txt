@@ -773,7 +773,7 @@ Response includes:
 Later, we can *extend to async* with a job table + scheduler/queue.
 
 ---
-# ✅ Step 1: Add Apache Commons CSV Dependency
+ ✅ Step 1: Add Apache Commons CSV Dependency
 
 📂 `pom.xml`
 
@@ -787,7 +787,7 @@ Later, we can *extend to async* with a job table + scheduler/queue.
 
 ---
 
-# ✅ Step 2: Create Bulk Upload Service
+ ✅ Step 2: Create Bulk Upload Service
 	
 📂 `InstrumentService.java`
 	```java
@@ -848,7 +848,7 @@ Later, we can *extend to async* with a job table + scheduler/queue.
 	```
 ---
 
-# ✅ Step 3: Create Result DTO
+ ✅ Step 3: Create Result DTO
 
 📂 `BulkUploadResult.java`
 
@@ -870,7 +870,7 @@ Later, we can *extend to async* with a job table + scheduler/queue.
 	```
 ---
 
-# ✅ Step 4: Controller Endpoint
+ ✅ Step 4: Controller Endpoint
 
 📂 `InstrumentController.java`
 
@@ -887,7 +887,7 @@ Later, we can *extend to async* with a job table + scheduler/queue.
 
 ---
 
-# ✅ Step 5: Example CSV Format
+ ✅ Step 5: Example CSV Format
 
 📂 `instruments.csv`
 
@@ -900,7 +900,7 @@ US02079K3059,02079K305,GOOGL,NASDAQ,USD
 
 ---
 
-# ✅ Step 6: Test in Postman
+ ✅ Step 6: Test in Postman
 
 * `POST http://localhost:8080/api/instruments/upload`
 * Select *form-data* → key: `file` (type: File) → upload `instruments.csv`.
@@ -917,7 +917,7 @@ US02079K3059,02079K305,GOOGL,NASDAQ,USD
 
 ---
 
-# ✅ Roadmap after Bulk Upload
+ ✅ Roadmap after Bulk Upload
 
 * [x] Synchronous Bulk Upload
 * [ ] Asynchronous Bulk Upload (Job Tracking, Background processing)
@@ -928,7 +928,7 @@ US02079K3059,02079K305,GOOGL,NASDAQ,USD
 ----------------------------------------------------------------------------
 2. Asynchronous Bulk Upload – Design
 
-# Flow:
+ Flow:
 
 1. User uploads CSV → API *stores file & creates a Job record* (status = `PENDING`).
 2. A *background thread* processes the file (validate → save to DB).
@@ -939,7 +939,7 @@ This mimics real IT industry projects (Job orchestration).
 
 ---
 
-# ✅ Step 1: Create Job Entity
+ ✅ Step 1: Create Job Entity
 	📂 `entity/BulkUploadJob.java`
 
 	```java
@@ -984,7 +984,7 @@ This mimics real IT industry projects (Job orchestration).
 	```
 
 
-# ✅ Step 2: Job Status Enum
+ ✅ Step 2: Job Status Enum
 	📂 `entity/JobStatus.java`
 
 	```java
@@ -1000,7 +1000,7 @@ This mimics real IT industry projects (Job orchestration).
 
 ---
 
-# ✅ Step 3: Job Repository
+ ✅ Step 3: Job Repository
 
 📂 `repository/BulkUploadJobRepository.java`
 
@@ -1015,7 +1015,7 @@ This mimics real IT industry projects (Job orchestration).
 	```
 
 
-# ✅ Step 4: DTOs for Job Response
+ ✅ Step 4: DTOs for Job Response
 	📂 `dto/BulkUploadJobResponse.java`
 
 	```java
@@ -1052,7 +1052,7 @@ This mimics real IT industry projects (Job orchestration).
 	```
 
 
-# ✅ Step 5: Service Layer
+ ✅ Step 5: Service Layer
 
 📂 `InstrumentService.java`
 
@@ -1151,7 +1151,7 @@ public class InstrumentService {
 
 ---
 
-# ✅ Step 6: Controller Layer
+ ✅ Step 6: Controller Layer
 
 📂 `InstrumentController.java`
 
@@ -1183,7 +1183,7 @@ public ResponseEntity<BulkUploadJobResponse> getJobStatus(@PathVariable Long job
 ---
 ✅ Example Usage in Postman
 
-# Upload CSV (Async): `POST http://localhost:8080/api/instruments/upload/async`
+ Upload CSV (Async): `POST http://localhost:8080/api/instruments/upload/async`
 
 * Form-data → `file` → choose `instruments.csv`
 
@@ -1201,7 +1201,7 @@ Response:
 	}
 	```
 
-# Check Job Status: `GET http://localhost:8080/api/instruments/upload/status/1`
+ Check Job Status: `GET http://localhost:8080/api/instruments/upload/status/1`
 
 Response:
 	```json
@@ -1223,9 +1223,245 @@ Response:
 	* Realistic *job tracking* mechanism.
 
 ============================================================================
+10. Auditing
+    * Enable JPA Auditing (`createdBy`, `updatedBy`, timestamps)
+    * Store change history in `instrument_audit` table (or Envers)
 
+Great 🚀 we’re at the *auditing stage*, which is super important in finance/banking apps because every change must be traceable.
+We’ll implement *two levels of auditing*:
+	1. *Entity-level auditing* → `createdBy`, `updatedBy`, `createdAt`, `updatedAt`
+	   (via Spring Data JPA Auditing).
+	2. *Change history auditing* → keep *history of modifications* in a separate table using Hibernate *Envers*.
 
+---
 
+✅ Step 1: Enable JPA Auditing
+
+📂 `RefDataApplication.java`
+	```java
+	import org.springframework.boot.SpringApplication;
+	import org.springframework.boot.autoconfigure.SpringBootApplication;
+	import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+
+	@SpringBootApplication
+	@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+	public class RefDataApplication {
+		public static void main(String[] args) {
+			SpringApplication.run(RefDataApplication.class, args);
+		}
+	}
+	```
+
+✅ Step 2: Auditor Provider
+
+📂 `config/AuditorAwareImpl.java`
+
+	```java
+	package com.shak.refdata.config;
+
+	import org.springframework.data.domain.AuditorAware;
+	import org.springframework.stereotype.Component;
+
+	import java.util.Optional;
+
+	@Component("auditorProvider")
+	public class AuditorAwareImpl implements AuditorAware<String> {
+
+		@Override
+		public Optional<String> getCurrentAuditor() {
+			// In real-world: extract from SecurityContext (e.g. logged-in user)
+			return Optional.of("system-user");
+		}
+	}
+	```
+
+👉 Later, we’ll replace `"system-user"` with *logged-in user* once we add Spring Security.
+
+------------
+✅ Step 3: Base Entity for Audit Fields
+
+📂 `entity/BaseEntity.java`
+
+```java
+package com.shak.refdata.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class BaseEntity {
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @CreatedBy
+    @Column(name = "created_by", updatable = false)
+    private String createdBy;
+
+    @LastModifiedBy
+    @Column(name = "updated_by")
+    private String updatedBy;
+
+    // Getters & Setters
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getCreatedBy() { return createdBy; }
+    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
+
+    public String getUpdatedBy() { return updatedBy; }
+    public void setUpdatedBy(String updatedBy) { this.updatedBy = updatedBy; }
+}
+```
+
+---
+
+ ✅ Step 4: Update Instrument Entity
+
+📂 `entity/Instrument.java`
+
+```java
+@Entity
+@Table(name = "instruments")
+@org.hibernate.envers.Audited  // Hibernate Envers
+public class Instrument extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(length = 12, nullable = false, unique = true)
+    private String isin;
+
+    @Column(length = 9, unique = true)
+    private String cusip;
+
+    @Column(length = 10)
+    private String ticker;
+
+    @Column(length = 50)
+    private String exchange;
+
+    @Column(length = 3)
+    private String currency;
+
+    // Getters & Setters ...
+}
+```
+
+---
+
+ ✅ Step 5: Add Hibernate Envers Dependency
+
+📂 `pom.xml`
+
+```xml
+<dependency>
+    <groupId>org.hibernate.orm</groupId>
+    <artifactId>hibernate-envers</artifactId>
+</dependency>
+```
+
+---
+
+ ✅ Step 6: How Envers Works
+
+When you add `@Audited` to `Instrument`, Hibernate automatically creates a new table:
+
+📂 Database Tables:
+
+* `instruments` (main table)
+* `instruments_AUD` (audit history table)
+* `revinfo` (revision metadata table)
+
+Example row in `instruments_AUD`:
+
+```sql
+id | isin         | cusip     | ticker | exchange | currency | rev | revtype
+---+--------------+-----------+--------+----------+----------+-----+--------
+1  | US0378331005 | 037833100 | AAPL   | NASDAQ   | USD      | 1   | 0
+1  | US0378331005 | 037833100 | AAPL   | NYSE     | USD      | 2   | 1
+```
+
+👉 `revtype`:
+
+* `0` = Insert
+* `1` = Update
+* `2` = Delete
+
+---
+
+ ✅ Step 7: Accessing Audit History (Optional)
+
+If you want to fetch audit history in code:
+
+📂 `InstrumentAuditService.java`
+
+```java
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
+import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityManager;
+import java.util.List;
+
+@Service
+public class InstrumentAuditService {
+
+    private final EntityManager entityManager;
+
+    public InstrumentAuditService(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    public List<Object[]> getAuditHistory(Long instrumentId) {
+        AuditReader reader = AuditReaderFactory.get(entityManager);
+        return reader.createQuery()
+                .forRevisionsOfEntity(Instrument.class, false, true)
+                .addProjection(org.hibernate.envers.query.AuditEntity.id())
+                .addProjection(org.hibernate.envers.query.AuditEntity.revisionNumber())
+                .addProjection(org.hibernate.envers.query.AuditEntity.revisionType())
+                .add(org.hibernate.envers.query.AuditEntity.id().eq(instrumentId))
+                .getResultList();
+    }
+}
+```
+
+---
+
+ ✅ Example API Usage
+
+* Create Instrument → Inserted in `instruments` & `instruments_AUD` (revtype=0).
+* Update Instrument (change exchange) → Update in `instruments` & new row in `instruments_AUD` (revtype=1).
+* Delete Instrument → New row in `instruments_AUD` (revtype=2).
+
+---
+
+📌 *At this stage* you have:
+
+* Automatic auditing (`createdBy`, `updatedBy`, timestamps).
+* Full change history (`instrument_AUD` table).
+
+---
+
+👉 Do you want me to add an *API to fetch audit history* for an instrument (`/api/instruments/{id}/audit`) so you can demo it in Postman?
 
 
 

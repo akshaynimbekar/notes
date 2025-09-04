@@ -985,7 +985,9 @@ Ways to achieve:
    ```
 
 ============================================================================
-
+10. Auditing
+    * Enable JPA Auditing (`createdBy`, `updatedBy`, timestamps)
+    * Store change history in `instrument_audit` table (or Envers)
 
 
 
