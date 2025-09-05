@@ -1,0 +1,1322 @@
+Core Java Interview Questions & Answers (1–50)
+
+ 1. Difference between JDK, JRE, and JVM?
+
+* JVM (Java Virtual Machine): Executes Java bytecode and provides platform independence.
+* JRE (Java Runtime Environment): Includes JVM + libraries required to run Java programs.
+* JDK (Java Development Kit): Includes JRE + development tools like compiler (`javac`), debugger, etc.
+
+---
+
+ 2. Difference between `==` and `.equals()` in Java?
+
+* `==` compares references (memory addresses) for objects, not content.
+* `.equals()` is a method that compares actual values/content (if overridden properly).
+* Example: `new String("abc") == new String("abc")` → false, but `.equals()` → true.
+
+---
+
+ 3. Explain object-oriented programming (OOP).
+
+* OOP is a programming paradigm based on objects that encapsulate data and behavior.
+* Key concepts: Encapsulation, Inheritance, Polymorphism, Abstraction.
+* It helps in reusability, modularity, and maintainability of code.
+
+---
+
+ 4. What are access modifiers in Java?
+
+* They define the visibility/scope of classes, methods, and variables.
+* Types: `public` (everywhere), `protected` (same package + subclass), default (same package), `private` (same class).
+* Example: A `private` method cannot be accessed outside its class.
+
+---
+
+ 5. Difference between `abstract` class and `interface`.
+
+* Abstract class can have both abstract (unimplemented) and concrete methods.
+* Interface (Java 8+) can have abstract, default, and static methods but no instance fields.
+* A class can extend only one abstract class but implement multiple interfaces.
+
+---
+
+ 6. What is multiple inheritance? How does Java handle it?
+
+* Multiple inheritance means a class inherits from more than one parent class.
+* Java doesn’t allow multiple class inheritance to avoid the *diamond problem*.
+* Instead, it allows multiple interface implementations.
+
+---
+
+ 7. Explain method overloading vs. method overriding.
+
+* Overloading: Same method name but different parameter list (compile-time polymorphism).
+* Overriding: Subclass provides its own implementation of a superclass method (runtime polymorphism).
+* Example: `add(int, int)` vs `add(double, double)` (overloading).
+
+---
+
+ 8. What is a constructor? Types of constructors?
+
+* A constructor is a special method used to initialize objects.
+* Types: Default constructor (no args, created if none provided) and Parameterized constructor (takes arguments).
+* It has the same name as the class and no return type.
+
+---
+
+ 9. Can constructors be inherited? Why or why not?
+
+* No, constructors are not inherited because they are not members of the class.
+* Each class defines its own constructors to initialize its own fields.
+* However, `super()` can be used to call the parent constructor.
+
+---
+
+ 10. Difference between `final`, `finally`, and `finalize()`.
+
+* `final`: keyword → used to declare constants, prevent method overriding, or inheritance.
+* `finally`: block → ensures execution of code after `try-catch`, e.g., resource cleanup.
+* `finalize()`: method → called by GC before destroying an object (deprecated in Java 9).
+
+---
+
+ 11. Explain garbage collection in Java.
+
+* Garbage collection automatically removes unused objects from memory.
+* JVM’s GC runs in the background and frees heap memory.
+* Developers can request GC via `System.gc()`, but it’s not guaranteed.
+
+---
+
+ 12. What are wrapper classes?
+
+* Wrapper classes convert primitive data types into objects.
+* Example: `int → Integer`, `double → Double`.
+* Useful in collections (like `ArrayList<Integer>`) since they work with objects, not primitives.
+
+---
+
+ 13. Difference between `String`, `StringBuilder`, and `StringBuffer`.
+
+* `String` is immutable; modifications create new objects.
+* `StringBuilder` is mutable and not thread-safe but faster.
+* `StringBuffer` is mutable and thread-safe (synchronized), but slower than StringBuilder.
+
+---
+
+ 14. Why is String immutable in Java?
+
+* Security: prevents malicious modification (e.g., classpath, database URLs).
+* Thread safety: immutable objects are naturally thread-safe.
+* Performance: allows String literals to be stored in a String pool.
+
+---
+
+ 15. What are static variables and methods?
+
+* `static` variables are shared across all instances of a class.
+* `static` methods belong to the class, not an object (e.g., `Math.max()`).
+* They can be accessed without creating an object.
+
+---
+
+ 16. Explain `this` keyword usage.
+
+* Refers to the current object inside a method or constructor.
+* Used to differentiate between instance variables and parameters with the same name.
+* Example: `this.name = name;`.
+
+---
+
+ 17. Explain `super` keyword usage.
+
+* Refers to the immediate parent class object.
+* Used to call parent class methods/constructors.
+* Example: `super()` calls the parent constructor in a subclass constructor.
+
+---
+
+ 18. Difference between `==` and `compareTo()`.
+
+* `==`: Compares object references (same memory location).
+* `compareTo()`: Compares values lexicographically (used in `Comparable`).
+* Example: `"abc".compareTo("abd") → -1`.
+
+---
+
+ 19. Explain pass by value vs. pass by reference in Java.
+
+* Java is always pass by value (not reference).
+* For primitives: value itself is copied.
+* For objects: reference (address) is copied, but both variables point to same object.
+
+---
+
+ 20. What is polymorphism in Java? Give real-world example.
+
+* Ability of one entity (method/class) to take multiple forms.
+* Compile-time polymorphism → method overloading; Runtime → method overriding.
+* Example: `draw()` method behaves differently for `Circle` and `Square`.
+
+---
+
+ 21. Explain encapsulation with an example.
+
+* Encapsulation is wrapping variables and methods into a single unit (class).
+* Fields are declared `private` and accessed via getters/setters.
+* Example: `BankAccount` class with `balance` hidden from direct access.
+
+---
+
+ 22. Explain inheritance with an example.
+
+* Inheritance allows one class to acquire properties of another.
+* Achieved using `extends` keyword.
+* Example: `class Car extends Vehicle`.
+
+---
+
+ 23. What is an inner class? Types of inner classes?
+
+* A class defined inside another class.
+* Types: Non-static inner class, Static nested class, Local inner class, Anonymous inner class.
+* They are used to logically group classes and increase encapsulation.
+
+---
+
+ 24. What is a Singleton class? How do you implement it?
+
+* A class that allows only one instance throughout the application.
+* Implemented using a private constructor and static `getInstance()` method.
+* Can be thread-safe with `synchronized` or `Bill Pugh Singleton` pattern.
+
+---
+
+ 25. What are Java Annotations?
+
+* Metadata that provides data about the program but not part of it.
+* Used by compiler and frameworks (e.g., `@Override`, `@Autowired`).
+* Custom annotations can be created using `@interface`.
+
+---
+
+ 26. Explain enums in Java.
+
+* Enum is a special class that represents a fixed set of constants.
+* Example: `enum Day { MONDAY, TUESDAY, WEDNESDAY }`.
+* Enums can have fields, constructors, and methods.
+
+---
+
+ 27. Difference between shallow copy and deep copy.
+
+* Shallow copy: Copies object but references same nested objects.
+* Deep copy: Copies object and creates new copies of nested objects.
+* Example: `clone()` by default gives shallow copy.
+
+---
+
+ 28. What is a marker interface? Examples?
+
+* An interface with no methods/fields.
+* Used to signal metadata to JVM or frameworks.
+* Examples: `Serializable`, `Cloneable`.
+
+---
+
+ 29. Difference between checked and unchecked exceptions.
+
+* Checked exceptions: Must be handled at compile time (`IOException`).
+* Unchecked exceptions: Occur at runtime (`NullPointerException`).
+* All checked exceptions extend `Exception`; unchecked extend `RuntimeException`.
+
+---
+
+ 30. Difference between `throw` and `throws`.
+
+* `throw`: Used to explicitly throw an exception (`throw new IOException();`).
+* `throws`: Declares exceptions a method might throw.
+* Example: `void read() throws IOException`.
+
+---
+
+ 31. Can you create your own exception class? How?
+
+* Yes, by extending `Exception` (checked) or `RuntimeException` (unchecked).
+* You can add custom constructors and messages.
+* Example: `class InvalidAgeException extends Exception`.
+
+---
+
+ 32. What is try-with-resources?
+
+* Introduced in Java 7 to automatically close resources.
+* Any class implementing `AutoCloseable` can be used.
+* Example: `try (BufferedReader br = new BufferedReader(...)) { ... }`.
+
+---
+
+ 33. What is serialization? How is it implemented in Java?
+
+* Serialization is converting an object into a byte stream for storage/transfer.
+* Implemented using `Serializable` interface.
+* Deserialization reconstructs the object using `ObjectInputStream`.
+
+---
+
+ 34. What is transient keyword?
+
+* Used to prevent a variable from being serialized.
+* Example: `transient int password;`.
+* Useful for sensitive or temporary data.
+
+---
+
+ 35. Difference between Comparable and Comparator.
+
+* Comparable: Defines natural ordering using `compareTo()` (single property).
+* Comparator: Defines custom ordering using `compare()` (multiple ways).
+* Example: Sorting students by `rollNo` (Comparable) or `name` (Comparator).
+
+---
+
+ 36. What are generics in Java? Why are they used?
+
+* Generics allow type safety at compile time.
+* Prevents ClassCastException and reduces boilerplate casting.
+* Example: `List<String> list = new ArrayList<>();`.
+
+---
+
+ 37. Explain `volatile` keyword.
+
+* Ensures visibility of variable changes across threads.
+* Prevents caching of variable in thread-local memory.
+* Example: `volatile boolean flag = true;`.
+
+---
+
+ 38. Difference between `synchronized` method and synchronized block.
+
+* Synchronized method: locks entire method for one thread.
+* Synchronized block: locks only specific code block/object.
+* Block gives better performance as scope is smaller.
+
+---
+
+ 39. What are functional interfaces? Examples?
+
+* Interfaces with exactly one abstract method.
+* Used in lambda expressions and Streams.
+* Examples: `Runnable`, `Callable`, `Comparator`, `Supplier`, `Consumer`.
+
+---
+
+ 40. What is a lambda expression in Java?
+
+* Introduced in Java 8 to implement functional interfaces concisely.
+* Syntax: `(parameters) -> expression`.
+* Example: `(a, b) -> a + b;`.
+
+---
+
+ 41. What is the Stream API? Common operations?
+
+* Introduced in Java 8 for functional-style processing of collections.
+* Operations: `map`, `filter`, `reduce`, `collect`, `forEach`.
+* Example: `list.stream().filter(x -> x > 10).collect(Collectors.toList());`.
+
+---
+
+ 42. Difference between `map()` and `flatMap()`.
+
+* `map()`: Transforms elements, returns Stream of Streams if nested.
+* `flatMap()`: Flattens nested structures into a single stream.
+* Example: `listOfLists.stream().flatMap(List::stream)`.
+
+---
+
+ 43. Explain Optional in Java.
+
+* `Optional` is a container class to avoid `NullPointerException`.
+* Provides methods like `isPresent()`, `orElse()`, `ifPresent()`.
+* Example: `Optional.ofNullable(value).orElse("default");`.
+
+---
+
+ 44. What are default methods in interfaces?
+
+* Introduced in Java 8; allow method implementation inside interfaces.
+* Provide backward compatibility when new methods are added.
+* Example: `default void log(){ System.out.println("Logging..."); }`.
+
+---
+
+ 45. Difference between `ArrayList`, `LinkedList`, `Vector`.
+
+* `ArrayList`: dynamic array, fast random access, slower inserts/deletes.
+* `LinkedList`: doubly linked list, fast inserts/deletes, slower access.
+* `Vector`: synchronized version of `ArrayList` (rarely used now).
+
+---
+
+ 46. Difference between `HashMap`, `LinkedHashMap`, `TreeMap`.
+
+* `HashMap`: stores in hash table, no order guaranteed.
+* `LinkedHashMap`: maintains insertion order.
+* `TreeMap`: stores in sorted order using Red-Black Tree.
+
+---
+
+ 47. Difference between `HashSet` and `TreeSet`.
+
+* `HashSet`: stores elements in hash table, no order.
+* `TreeSet`: stores elements in sorted order (uses TreeMap internally).
+* `HashSet` is faster; `TreeSet` provides ordering.
+
+---
+
+ 48. Difference between fail-fast and fail-safe iterators.
+
+* Fail-fast: Throws `ConcurrentModificationException` if structure modified (e.g., `ArrayList`).
+* Fail-safe: Works on copy of collection, no exception (e.g., `ConcurrentHashMap`).
+* Fail-fast is faster; fail-safe is safer.
+
+---
+
+ 49. What is ConcurrentHashMap? How is it different from HashMap?
+
+* Thread-safe implementation of Map.
+* Uses segmentation/locking only part of map (better concurrency).
+* HashMap is not synchronized, not thread-safe.
+
+---
+
+ 50. Java 17 features you have used.
+
+* Sealed classes: control inheritance hierarchy.
+* Pattern matching for `instanceof`.
+* Records (data-carrying immutable classes).
+* Enhanced switch expressions.
+
+----------------------------------------------------------------------------
+
+Spring & Spring Boot Interview Questions & Answers (51–90)
+
+---
+
+ 51. What is Spring Boot? How is it different from Spring Framework?
+
+* Spring Boot is an opinionated framework built on top of Spring to simplify development.
+* It eliminates boilerplate setup by providing auto-configuration, starters, and an embedded server.
+* Unlike Spring Framework (which requires lots of XML/Java config), Spring Boot reduces setup effort.
+
+---
+
+ 52. What are the advantages of Spring Boot?
+
+* Auto-configuration reduces manual setup and boilerplate code.
+* Comes with embedded servers like Tomcat, so no external deployment needed.
+* Provides production-ready features like health checks, monitoring, and metrics via Actuator.
+
+---
+
+ 53. Explain dependency injection (DI) and inversion of control (IoC).
+
+* Dependency Injection: Instead of a class creating its dependencies, they are provided externally.
+* IoC: The control of object creation and lifecycle is inverted from developer to container (Spring IoC container).
+* Benefits: Loose coupling, testability, maintainability.
+
+---
+
+ 54. What are Spring Boot starters?
+
+* Starters are pre-configured dependency descriptors to simplify adding libraries.
+* Example: `spring-boot-starter-web` includes Tomcat, Jackson, Spring MVC automatically.
+* Saves time by avoiding manual dependency management.
+
+---
+
+ 55. What is Spring Boot auto-configuration?
+
+* It automatically configures beans based on the classpath and existing beans.
+* Example: If `spring-boot-starter-data-jpa` is added, it auto-configures DataSource, EntityManager, etc.
+* Can be customized using `@EnableAutoConfiguration` or excluded if needed.
+
+---
+
+ 56. Difference between `@Component`, `@Service`, and `@Repository`.
+
+* `@Component`: Generic stereotype for any bean.
+* `@Service`: Specialized for business logic layer.
+* `@Repository`: Specialized for persistence layer, adds exception translation for DB errors.
+
+---
+
+ 57. What is `@Autowired`? Different ways of injection?
+
+* `@Autowired` is used to inject bean dependencies automatically.
+* Types of injection: Constructor Injection (recommended), Setter Injection, Field Injection.
+* Constructor injection ensures immutability and easier testing.
+
+---
+
+ 58. Explain `@Configuration` and `@Bean`.
+
+* `@Configuration`: Marks a class as a source of Spring bean definitions.
+* `@Bean`: Used inside `@Configuration` class to define a bean.
+* Example:
+
+  ```java
+  @Bean
+  public DataSource dataSource() { return new HikariDataSource(); }
+  ```
+
+---
+
+ 59. What is `@RestController` vs `@Controller`?
+
+* `@Controller`: Used to return views (like JSP/Thymeleaf).
+* `@RestController`: Combines `@Controller` + `@ResponseBody` → returns JSON/XML directly.
+* Used for REST APIs where data (not UI) is returned.
+
+---
+
+ 60. Difference between `@RequestMapping`, `@GetMapping`, `@PostMapping`.
+
+* `@RequestMapping`: General mapping for all HTTP methods.
+* `@GetMapping`, `@PostMapping`: Shorthand annotations for GET and POST methods.
+* Example: `@GetMapping("/users")` is equivalent to `@RequestMapping(value="/users", method=GET)`.
+
+---
+
+ 61. What is the use of `@ResponseBody` and `@RequestBody`?
+
+* `@ResponseBody`: Converts Java object to JSON/XML in response.
+* `@RequestBody`: Converts JSON/XML from request body into a Java object.
+* Together they enable seamless REST communication.
+
+---
+
+ 62. Explain exception handling in Spring Boot.
+
+* Handled using `@ExceptionHandler` inside controller.
+* Can also define a global exception handler using `@ControllerAdvice`.
+* Custom error responses can be returned to clients.
+
+---
+
+ 63. How to handle global exceptions? (`@ControllerAdvice`)
+
+* `@ControllerAdvice` is used to define centralized exception handling.
+* It can catch exceptions from multiple controllers.
+* Example:
+
+  ```java
+  @ControllerAdvice
+  class GlobalExceptionHandler {
+      @ExceptionHandler(Exception.class)
+      ResponseEntity<String> handleAll(Exception ex) { return ResponseEntity.badRequest().body("Error"); }
+  }
+  ```
+
+---
+
+ 64. What is Spring Boot Actuator?
+
+* Provides production-ready features like health checks, metrics, and monitoring.
+* Exposes endpoints like `/actuator/health`, `/actuator/metrics`.
+* Helps monitor applications in real-time.
+
+---
+
+ 65. What is Spring Data JPA? Advantages?
+
+* Abstraction over JPA/Hibernate that reduces boilerplate code for data access.
+* Provides repositories (`CrudRepository`, `JpaRepository`) with built-in CRUD operations.
+* Allows custom queries using method names or `@Query`.
+
+---
+
+ 66. Difference between CrudRepository, JpaRepository, and PagingAndSortingRepository.
+
+* `CrudRepository`: Basic CRUD operations.
+* `PagingAndSortingRepository`: CRUD + pagination + sorting.
+* `JpaRepository`: Extends both, adds advanced JPA features like batch operations.
+
+---
+
+ 67. How do you implement pagination in Spring Data JPA?
+
+* Use `Pageable` and `Page` interfaces.
+* Example: `Page<User> users = userRepo.findAll(PageRequest.of(0, 10));`.
+* Supports sorting and custom query pagination.
+
+---
+
+ 68. What is Hibernate? How does it integrate with Spring Boot?
+
+* Hibernate is an ORM framework for mapping Java objects to database tables.
+* In Spring Boot, Hibernate integrates via JPA starter (`spring-boot-starter-data-jpa`).
+* Entities are managed automatically with transaction support.
+
+---
+
+ 69. Difference between `save()` and `saveAndFlush()`.
+
+* `save()`: Saves entity, may defer writing to DB until transaction commit.
+* `saveAndFlush()`: Immediately writes changes to DB using flush.
+* Useful when you need immediate persistence (e.g., before next query).
+
+---
+
+ 70. What is lazy loading vs eager loading in Hibernate?
+
+* Lazy loading: Loads related entities only when accessed (default).
+* Eager loading: Loads related entities immediately with parent.
+* Lazy improves performance but can cause `LazyInitializationException` if session closed.
+
+---
+
+ 71. What are entity relationships in JPA (OneToOne, OneToMany, ManyToMany)?
+
+* OneToOne: One entity mapped to exactly one other (User ↔ Address).
+* OneToMany: One entity related to multiple others (Department ↔ Employees).
+* ManyToMany: Entities related both ways (Students ↔ Courses).
+
+---
+
+ 72. Difference between native query and JPQL.
+
+* JPQL (Java Persistence Query Language): Works with entity objects (OOP-based).
+* Native Query: Uses raw SQL, works directly with tables and columns.
+* JPQL is database-agnostic; native queries are DB-specific.
+
+---
+
+ 73. How do you implement caching in Spring Boot?
+
+* Enable with `@EnableCaching` annotation.
+* Use `@Cacheable`, `@CachePut`, `@CacheEvict` on methods.
+* Backed by providers like EhCache, Redis, or Caffeine.
+
+---
+
+ 74. What is Spring Security? How do you implement JWT authentication?
+
+* Spring Security provides authentication, authorization, and security filters.
+* JWT authentication flow: client logs in → server issues JWT → client sends JWT in headers → server validates it.
+* Configured via `SecurityFilterChain` or `WebSecurityConfigurerAdapter` (older).
+
+---
+
+ 75. Difference between OAuth2 and JWT.
+
+* OAuth2: Authorization protocol allowing secure access via tokens.
+* JWT (JSON Web Token): A compact format for transmitting claims between client and server.
+* OAuth2 can use JWT as one of its token formats.
+
+---
+
+ 76. What is AOP (Aspect-Oriented Programming)?
+
+* AOP helps separate cross-cutting concerns (logging, security, transactions).
+* Uses concepts like Aspect, Advice, Pointcut, Joinpoint.
+* Example: Logging method execution time without modifying business logic.
+
+---
+
+ 77. What are interceptors and filters in Spring Boot?
+
+* Filter: Works at servlet level, before request reaches DispatcherServlet.
+* Interceptor: Works at Spring MVC level, before and after controller execution.
+* Both are useful for logging, authentication, or request preprocessing.
+
+---
+
+ 78. How do you test REST APIs in Spring Boot?
+
+* Use `MockMvc` for unit/integration tests of controllers.
+* Use `@WebMvcTest` or `@SpringBootTest` annotations.
+* Tools like Postman and Swagger are used for manual testing.
+
+---
+
+ 79. Difference between unit testing and integration testing.
+
+* Unit testing: Tests individual components (like service methods).
+* Integration testing: Tests multiple components working together (controller + DB).
+* Both are important for robust applications.
+
+---
+
+ 80. How to secure REST APIs in Spring Boot?
+
+* Use Spring Security with JWT, OAuth2, or Basic Auth.
+* Configure CORS policies for frontend-backend communication.
+* Validate inputs to prevent CSRF, XSS, and SQL injection.
+
+---
+
+ 81. What is HATEOAS in REST APIs?
+
+* Hypermedia as the Engine of Application State.
+* REST responses include links to related actions/resources.
+* Example: `/orders/1` response includes links to `cancel`, `update`, `payment`.
+
+---
+
+ 82. What is CORS? How do you enable it in Spring Boot?
+
+* CORS (Cross-Origin Resource Sharing): Allows resources from one domain to be accessed by another.
+* Can be enabled using `@CrossOrigin` annotation on controllers.
+* Or globally via `WebMvcConfigurer.addCorsMappings()`.
+
+---
+
+ 83. What is a microservice? How does Spring Boot help?
+
+* Microservice: Independent, loosely-coupled service that performs a single function.
+* Spring Boot simplifies microservices with embedded servers, REST, and easy deployment.
+* Works well with Spring Cloud for distributed systems.
+
+---
+
+ 84. What is service discovery? Example with Eureka/Consul.
+
+* Service discovery allows microservices to register themselves and be discoverable.
+* Eureka (Netflix OSS) and Consul are commonly used registries.
+* Example: A service calls `user-service` by name, not hardcoded IP.
+
+---
+
+ 85. What is API Gateway? Example with Spring Cloud Gateway.
+
+* API Gateway acts as a single entry point for all microservices.
+* Handles routing, load balancing, authentication, logging.
+* Spring Cloud Gateway is a reactive, easy-to-use gateway solution.
+
+---
+
+ 86. How do you achieve inter-service communication in microservices?
+
+* Synchronous: REST calls, Feign client.
+* Asynchronous: Messaging via Kafka, RabbitMQ.
+* Choice depends on use case (latency vs scalability).
+
+---
+
+ 87. What is Feign Client in Spring Cloud?
+
+* Declarative HTTP client for calling REST services.
+* Uses interface + annotations, no boilerplate code.
+* Example:
+
+  ```java
+  @FeignClient(name="user-service")
+  interface UserClient { @GetMapping("/users/{id}") User getUser(@PathVariable Long id); }
+  ```
+
+---
+
+ 88. What are distributed transactions? How do you handle them?
+
+* Transactions spanning multiple microservices/databases.
+* Hard to manage with ACID → often use eventual consistency.
+* Handled using Saga pattern, 2-phase commit, or event-driven design.
+
+---
+
+ 89. Difference between synchronous and asynchronous communication in microservices.
+
+* Synchronous: Caller waits for response (REST).
+* Asynchronous: Caller sends message and continues (Kafka, RabbitMQ).
+* Async improves scalability but adds complexity.
+
+---
+
+ 90. How do you implement resilience and fault tolerance (Hystrix/Resilience4j)?
+
+* Resilience4j provides patterns: Circuit Breaker, Retry, Rate Limiter, Bulkhead.
+* Prevents cascading failures when services are down.
+* Example: If `payment-service` is down, circuit breaker opens → fallback response is returned.
+
+----------------------------------------------------------------------------
+Databases & SQL Interview Questions & Answers (91–115)
+
+---
+
+ 91. Difference between SQL and NoSQL databases.
+
+* SQL databases: Relational, structured tables with predefined schema (e.g., MySQL, PostgreSQL, Oracle).
+* NoSQL databases: Non-relational, schema-less, store data as key-value, document, or graph (e.g., MongoDB, Cassandra).
+* SQL is best for transactions (ACID), while NoSQL excels at scalability and flexibility.
+
+---
+
+ 92. What is normalization? Different normal forms.
+
+* Normalization is the process of organizing data to eliminate redundancy and improve consistency.
+* 1NF: Atomic values only.
+* 2NF: 1NF + no partial dependency.
+* 3NF: 2NF + no transitive dependency.
+* Higher normal forms (BCNF, 4NF) deal with advanced anomalies.
+
+---
+
+ 93. Difference between primary key and unique key.
+
+* Primary key: Uniquely identifies each row in a table, cannot be NULL, only one per table.
+* Unique key: Ensures all values in a column are unique but allows one NULL.
+* Both create indexes, but primary key is more restrictive.
+
+---
+
+ 94. Difference between clustered and non-clustered index.
+
+* Clustered index: Sorts and stores rows physically in the table (one per table).
+* Non-clustered index: Stores separate structure with pointers to actual data.
+* Clustered = faster retrieval, but slower inserts; Non-clustered = flexible, multiple allowed.
+
+---
+
+ 95. What is a foreign key?
+
+* A constraint that links one table’s column to another table’s primary key.
+* Ensures referential integrity between parent and child tables.
+* Example: `order.customer_id` references `customer.id`.
+
+---
+
+ 96. Difference between inner join, left join, right join, full outer join.
+
+* Inner Join: Returns only matching rows.
+* Left Join: All rows from left + matching rows from right.
+* Right Join: All rows from right + matching rows from left.
+* Full Outer Join: All rows from both, with NULLs where no match.
+
+---
+
+ 97. Difference between `WHERE` and `HAVING`.
+
+* `WHERE`: Filters rows before grouping/aggregation.
+* `HAVING`: Filters groups after aggregation (`GROUP BY`).
+* Example: `WHERE age > 30` vs `HAVING COUNT(id) > 5`.
+
+---
+
+ 98. Difference between `GROUP BY` and `ORDER BY`.
+
+* `GROUP BY`: Groups rows based on column values for aggregation.
+* `ORDER BY`: Sorts result set (ascending/descending).
+* Example: `GROUP BY department` vs `ORDER BY salary DESC`.
+
+---
+
+ 99. What are stored procedures? Advantages?
+
+* Stored procedure = precompiled SQL statements stored in DB.
+* Advantages: Reusability, security (limit direct access), performance optimization.
+* Example: `CREATE PROCEDURE getUsers() BEGIN SELECT * FROM users; END;`.
+
+---
+
+ 100. What are triggers in SQL?
+
+* Triggers are special procedures executed automatically on events like INSERT, UPDATE, DELETE.
+* Used for auditing, logging, enforcing business rules.
+* Example: After insert into `orders`, update `inventory`.
+
+---
+
+ 101. Explain ACID properties.
+
+* Atomicity: Transaction is all-or-nothing.
+* Consistency: Database remains valid after transaction.
+* Isolation: Transactions run independently.
+* Durability: Once committed, changes persist even after failure.
+
+---
+
+ 102. What is a transaction? How do you implement it in SQL?
+
+* A transaction is a sequence of operations treated as a single unit of work.
+* Controlled using `BEGIN`, `COMMIT`, `ROLLBACK`.
+* Example: Deduct money from one account and add to another → must succeed/fail together.
+
+---
+
+ 103. Difference between DELETE, TRUNCATE, and DROP.
+
+* DELETE: Removes specific rows, can use `WHERE`, logged operation, slower.
+* TRUNCATE: Removes all rows, resets identity, faster, cannot use `WHERE`.
+* DROP: Deletes entire table structure and data.
+
+---
+
+ 104. Difference between UNION and UNION ALL.
+
+* UNION: Combines results of two queries, removes duplicates.
+* UNION ALL: Combines results and keeps duplicates.
+* UNION is slower due to duplicate elimination.
+
+---
+
+ 105. What is a view in SQL?
+
+* A virtual table created from a query.
+* Simplifies complex queries and improves security (restrict column access).
+* Example: `CREATE VIEW active_users AS SELECT name FROM users WHERE status='ACTIVE';`.
+
+---
+
+ 106. What is indexing? Pros and cons?
+
+* Indexing speeds up data retrieval by creating a separate lookup structure.
+* Pros: Faster SELECT queries.
+* Cons: Slower INSERT/UPDATE/DELETE (extra maintenance), more storage.
+
+---
+
+ 107. What is a deadlock in databases? How to resolve?
+
+* Deadlock: Two transactions waiting on each other’s locks indefinitely.
+* Example: Transaction A locks row1, waits for row2; Transaction B locks row2, waits for row1.
+* Resolved by timeout, deadlock detection, or redesigning transaction order.
+
+---
+
+ 108. How do you optimize SQL queries?
+
+* Use proper indexing and avoid SELECT \*.
+* Optimize joins, use EXISTS instead of IN where possible.
+* Analyze execution plans and minimize subqueries.
+
+---
+
+ 109. What is an execution plan in SQL?
+
+* Shows how SQL engine executes a query (indexes used, join strategy, scan types).
+* Helps in identifying bottlenecks like table scans vs index scans.
+* Can be obtained using `EXPLAIN` or `EXPLAIN ANALYZE`.
+
+---
+
+ 110. Difference between OLTP and OLAP systems.
+
+* OLTP (Online Transaction Processing): Handles day-to-day transactions, optimized for fast inserts/updates (e.g., banking systems).
+* OLAP (Online Analytical Processing): Handles large-scale analysis and reporting, optimized for reads and aggregations (e.g., data warehouses).
+* OLTP = real-time operations, OLAP = analytics.
+
+---
+
+ 111. Difference between Oracle and PostgreSQL features.
+
+* Oracle: Commercial, rich enterprise features (advanced partitioning, RAC, strong PL/SQL).
+* PostgreSQL: Open-source, supports JSON, MVCC, strong extensibility.
+* Oracle better for enterprise-scale apps; PostgreSQL widely used for modern apps.
+
+---
+
+ 112. What is PL/SQL?
+
+* PL/SQL is Oracle’s procedural extension to SQL.
+* Allows writing loops, conditions, functions, triggers, stored procedures.
+* Example: `DECLARE v_name VARCHAR2(20); BEGIN SELECT name INTO v_name FROM users; END;`.
+
+---
+
+ 113. What is window function in SQL? Example?
+
+* Performs calculations across a set of rows related to the current row.
+* Example: Ranking, moving average, cumulative sums.
+* `SELECT name, salary, RANK() OVER (ORDER BY salary DESC) FROM employees;`.
+
+---
+
+ 114. What is a materialized view?
+
+* A precomputed, stored version of a query result.
+* Unlike normal views, materialized views store data physically.
+* Useful for performance in reporting and OLAP.
+
+---
+
+ 115. Common SQL queries you have optimized in projects.
+
+* Optimized queries with multiple joins by adding composite indexes.
+* Replaced correlated subqueries with `JOIN` for better performance.
+* Used partitioning for large tables in Oracle/PostgreSQL for faster access.
+
+----------------------------------------------------------------------------
+
+REST APIs & Web Interview Questions & Answers (116–135)
+
+---
+
+ 116. What is REST? Principles of REST.
+
+* REST (Representational State Transfer) is an architectural style for designing web services.
+* Principles: Statelessness, Client-Server separation, Uniform interface, Cacheability, Layered system, Code-on-demand (optional).
+* REST APIs typically use HTTP methods (`GET`, `POST`, `PUT`, `DELETE`).
+
+---
+
+ 117. Difference between REST and SOAP.
+
+* REST: Lightweight, JSON/XML, stateless, cacheable, widely used for web/mobile.
+* SOAP: Protocol, XML-based, more secure (WS-Security), supports ACID transactions.
+* REST = simplicity & speed, SOAP = strict standards & enterprise use cases.
+
+---
+
+ 118. Difference between REST and GraphQL.
+
+* REST: Multiple endpoints, fixed structure, over/under-fetching possible.
+* GraphQL: Single endpoint, client specifies exact fields, avoids over-fetching.
+* REST is simple & cache-friendly, GraphQL is flexible but adds complexity.
+
+---
+
+ 119. Difference between GET and POST methods.
+
+* GET: Idempotent, retrieves data, parameters in URL, safe for read-only operations.
+* POST: Non-idempotent, submits data in body, used for create/update.
+* Example: GET `/users/1` vs POST `/users` with `{ "name": "Akshay" }`.
+
+---
+
+ 120. What is idempotency in REST APIs?
+
+* An operation is idempotent if multiple identical requests have the same effect as one.
+* Example: `DELETE /users/1` always removes user 1 (safe to retry).
+* `PUT` and `DELETE` are idempotent, `POST` is not.
+
+---
+
+ 121. What are HTTP status codes? Common ones used in REST.
+
+* Status codes represent API response outcomes.
+* 200 OK, 201 Created, 204 No Content, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 500 Internal Server Error.
+* They help clients understand success or error state.
+
+---
+
+ 122. Difference between PUT and PATCH.
+
+* PUT: Replaces the entire resource (idempotent).
+* PATCH: Partially updates resource fields (not always idempotent).
+* Example: PUT `/user/1` with full object vs PATCH `/user/1` with `{ "email": "new@mail.com" }`.
+
+---
+
+ 123. Difference between synchronous and asynchronous communication.
+
+* Synchronous: Client waits for server response (e.g., REST API calls).
+* Asynchronous: Server responds later (e.g., message queues, WebSockets).
+* Async is better for long-running tasks, sync for immediate results.
+
+---
+
+ 124. What is HATEOAS in REST?
+
+* HATEOAS = Hypermedia As The Engine Of Application State.
+* REST API responses include links to related resources, guiding client navigation.
+* Example: Response for `/orders/1` includes links to `/orders/1/payment`.
+
+---
+
+ 125. What is content negotiation in REST?
+
+* Mechanism for selecting response format based on `Accept` header.
+* Example: Client sends `Accept: application/json` → server responds with JSON.
+* Supports XML, JSON, YAML, etc., depending on API capability.
+
+---
+
+ 126. Difference between authentication and authorization.
+
+* Authentication: Verifies identity (e.g., login with username/password).
+* Authorization: Determines access rights (e.g., can user delete resource?).
+* Example: AuthN = “Who are you?”, AuthZ = “What can you do?”.
+
+---
+
+ 127. What is OAuth2? How does it work?
+
+* OAuth2 is an authorization framework for secure delegated access.
+* Instead of sharing credentials, client gets a token from an authorization server.
+* Flows: Authorization Code, Client Credentials, Implicit, Password.
+
+---
+
+ 128. What is JWT? Advantages?
+
+* JWT (JSON Web Token) is a compact, signed token used for authentication/authorization.
+* Contains header, payload, signature.
+* Advantages: stateless, no DB lookup needed, secure if signed with strong secret.
+
+---
+
+ 129. How do you secure REST APIs?
+
+* Use HTTPS to encrypt traffic.
+* Authentication with OAuth2/JWT.
+* Input validation, rate limiting, CSRF protection, logging, and monitoring.
+
+---
+
+ 130. Difference between session-based and token-based authentication.
+
+* Session-based: Server stores session data, client uses session ID (scales poorly).
+* Token-based: Client stores JWT, stateless, scalable in distributed systems.
+* Modern APIs favor token-based authentication.
+
+---
+
+ 131. What are API gateways? Why are they used?
+
+* API Gateway = entry point for microservices.
+* Provides routing, authentication, rate limiting, logging, monitoring.
+* Examples: Kong, Zuul, Spring Cloud Gateway, AWS API Gateway.
+
+---
+
+ 132. Difference between Monolithic and Microservices architecture.
+
+* Monolithic: Single codebase, tightly coupled, hard to scale.
+* Microservices: Independent services communicating via APIs, scalable, fault-tolerant.
+* Microservices = flexibility but adds complexity (network, monitoring).
+
+---
+
+ 133. What is CORS? Why is it important?
+
+* CORS (Cross-Origin Resource Sharing) controls which domains can access your APIs.
+* Browsers block cross-origin requests unless server explicitly allows.
+* Example: `Access-Control-Allow-Origin: *` enables all origins.
+
+---
+
+ 134. How do you document REST APIs?
+
+* Tools: Swagger (OpenAPI), Postman, RAML, API Blueprint.
+* Documentation includes endpoints, request/response formats, authentication details.
+* Helps developers integrate faster with consistent API references.
+
+---
+
+ 135. What are WebSockets? How do they differ from REST?
+
+* WebSockets provide full-duplex, persistent communication between client and server.
+* Unlike REST (request/response), WebSockets allow real-time updates.
+* Used in chat apps, live dashboards, gaming.
+
+----------------------------------------------------------------------------
+
+ Cloud, DevOps & Deployment Interview Questions & Answers (136–160)
+
+---
+
+ 136. What is CI/CD? Why is it important?
+
+* CI (Continuous Integration): Developers frequently merge code into a shared repo, triggering automated builds and tests.
+* CD (Continuous Delivery/Deployment): Ensures code is always deployable with automated deployment pipelines.
+* Importance: Faster releases, fewer bugs, consistent quality, improved team productivity.
+
+---
+
+ 137. What are containers? Difference between Docker and VM.
+
+* A container is a lightweight, isolated runtime environment that packages an app with dependencies.
+* VMs run full OS with heavy overhead; containers share the host kernel, making them faster and smaller.
+* Example: Docker runs multiple isolated apps on one host more efficiently than VMs.
+
+---
+
+ 138. What is Kubernetes? Why do we use it?
+
+* Kubernetes (K8s) is a container orchestration tool for automating deployment, scaling, and management of containers.
+* It handles service discovery, load balancing, self-healing, and rolling updates.
+* Used because manual container management at scale is impractical.
+
+---
+
+ 139. Difference between Docker Compose and Kubernetes.
+
+* Docker Compose: Orchestrates multiple containers on a single host.
+* Kubernetes: Orchestrates containers across clusters of machines, highly scalable.
+* Compose = simple/local, K8s = enterprise-grade orchestration.
+
+---
+
+ 140. What are Kubernetes Pods, Deployments, and Services?
+
+* Pod: Smallest unit, holds one or more containers.
+* Deployment: Manages Pods (scaling, rolling updates, rollback).
+* Service: Exposes Pods via stable networking (ClusterIP, NodePort, LoadBalancer).
+
+---
+
+ 141. What is AWS EC2?
+
+* Amazon Elastic Compute Cloud (EC2) provides resizable virtual servers in AWS cloud.
+* You can choose instance types (CPU, memory, storage optimized) as per workload.
+* Supports auto-scaling, load balancing, and multiple OS images.
+
+---
+
+ 142. What is AWS S3?
+
+* Amazon S3 (Simple Storage Service) is an object storage service.
+* Used to store files, images, backups, and logs with high durability (11 9’s).
+* Supports versioning, lifecycle policies, and integrates with AWS services.
+
+---
+
+ 143. What is AWS RDS?
+
+* Amazon RDS (Relational Database Service) manages relational databases (PostgreSQL, MySQL, Oracle, etc.).
+* Handles backups, patching, scaling, and high availability.
+* Removes operational overhead so devs can focus on application logic.
+
+---
+
+ 144. Difference between AWS ECS and EKS.
+
+* ECS (Elastic Container Service): AWS’s native container orchestration.
+* EKS (Elastic Kubernetes Service): Managed Kubernetes service on AWS.
+* ECS is simpler; EKS is chosen if Kubernetes is already part of org stack.
+
+---
+
+ 145. What is IaC (Infrastructure as Code)?
+
+* IaC manages infrastructure using code (YAML, JSON, HCL).
+* Tools: Terraform, CloudFormation, Ansible.
+* Benefits: Version control, repeatability, automation, easy rollback.
+
+---
+
+ 146. What is Terraform?
+
+* Terraform is an open-source IaC tool by HashiCorp.
+* Uses declarative configuration (`.tf` files) to provision multi-cloud infrastructure.
+* Example: Create AWS EC2, RDS, and S3 buckets via code.
+
+---
+
+ 147. What are some CI/CD tools you have worked with?
+
+* Jenkins: Open-source automation server.
+* GitLab CI/CD: Integrated with Git repos.
+* GitHub Actions: Cloud-based, event-driven pipelines.
+* Used these for building, testing, and deploying Java/Spring Boot apps with Docker & Kubernetes.
+
+---
+
+ 148. Difference between Jenkins and GitHub Actions.
+
+* Jenkins: Self-hosted, customizable with plugins, requires server maintenance.
+* GitHub Actions: Cloud-native, integrates with GitHub events (push, PR).
+* Jenkins = powerful but heavier, Actions = easier for GitHub-based projects.
+
+---
+
+ 149. What is Blue-Green Deployment?
+
+* Two environments: Blue (current) and Green (new version).
+* Traffic is switched to Green after successful validation.
+* Ensures zero downtime and quick rollback if issues occur.
+
+---
+
+ 150. What is Canary Deployment?
+
+* Deploys new version to a subset of users before full rollout.
+* Helps in testing real-world performance with minimal risk.
+* Example: Release new API version to 5% traffic, then gradually increase.
+
+---
+
+ 151. What is rolling deployment?
+
+* Replaces old version pods gradually with new ones.
+* Ensures no downtime but takes longer.
+* Kubernetes supports rolling updates with configurable strategies.
+
+---
+
+ 152. Difference between Monolithic deployment vs Microservices deployment.
+
+* Monolithic: Single deployable unit, simpler but harder to scale independently.
+* Microservices: Each service is deployed independently (often in containers).
+* Microservices enable faster, isolated updates but require DevOps maturity.
+
+---
+
+ 153. What is monitoring & logging in DevOps?
+
+* Monitoring: Tracks system health (CPU, memory, response times). Tools: Prometheus, Grafana, CloudWatch.
+* Logging: Captures system/application logs for debugging (ELK stack, Splunk).
+* Both ensure reliability, quick issue detection, and performance optimization.
+
+---
+
+ 154. What is Prometheus and Grafana?
+
+* Prometheus: Open-source monitoring tool for metrics collection and alerting.
+* Grafana: Visualization tool that builds dashboards using Prometheus data.
+* Together, they provide observability for apps running in Kubernetes.
+
+---
+
+ 155. How do you handle secrets in deployments?
+
+* Use secret management tools like AWS Secrets Manager, HashiCorp Vault, Kubernetes Secrets.
+* Never hardcode passwords/keys in code or configs.
+* Encrypt sensitive values and rotate them regularly.
+
+---
+
+ 156. How do you ensure zero-downtime deployment?
+
+* Use load balancers to route traffic between old and new versions.
+* Techniques: Blue-Green, Canary, Rolling Deployments.
+* Ensure DB migrations are backward-compatible before switching traffic.
+
+---
+
+ 157. What is Dockerfile?
+
+* A script that defines instructions to build a Docker image.
+* Contains base image, dependencies, environment variables, commands.
+* Example: `FROM openjdk:17-jdk-alpine → COPY app.jar → CMD ["java","-jar","app.jar"]`.
+
+---
+
+ 158. What is a Docker image vs Docker container?
+
+* Image: Read-only template with app + dependencies.
+* Container: Running instance of an image.
+* Multiple containers can run from the same image.
+
+---
+
+ 159. How do you optimize Docker images?
+
+* Use lightweight base images (e.g., `alpine`).
+* Use multi-stage builds to reduce size.
+* Avoid unnecessary layers/files; leverage `.dockerignore`.
+
+---
+
+ 160. What are Helm charts in Kubernetes?
+
+* Helm is a package manager for Kubernetes.
+* Helm charts are templates for deploying complex apps (with configs, services, deployments).
+* Simplifies repeatable, consistent deployments of microservices.
+
+---
+
+
