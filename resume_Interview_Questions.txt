@@ -392,12 +392,103 @@ Core Java Interview Questions & Answers (1–50)
 
 ---
 
- 50. Java 17 features you have used.
+ 50. Java 8, 11, 17 features you have used.
 
-* Sealed classes: control inheritance hierarchy.
-* Pattern matching for `instanceof`.
-* Records (data-carrying immutable classes).
-* Enhanced switch expressions.
+
+---Java 8 (2014) – Big Paradigm Shift
+Java 8 was a revolutionary release, introducing functional programming concepts and the Streams API.
+
+Major Features:
+1. Lambda Expressions → inline functions for functional programming
+2. Functional Interfaces (`@FunctionalInterface`, `Predicate`, `Consumer`, `Supplier`)
+3. Streams API → process collections in a declarative style
+4. Optional<T> → avoid `NullPointerException`
+5. Default and Static Methods in Interfaces
+6. New Date & Time API (`java.time`) → better replacement for `Date`
+7. Nashorn JavaScript Engine (later removed in Java 15)
+8. CompletableFuture for async programming
+
+---Java 11 (2018) – LTS & Practical Enhancements
+Java 11 is an LTS release and refined Java 8 concepts with many small but impactful changes.
+
+Major Features:
+
+1. New `var` for local variables (from Java 10)
+
+  ```java
+  var message = "Hello World";  // type inferred as String
+  ```
+2. HTTP Client API (standardized, incubated since Java 9)
+
+  ```java
+  HttpClient client = HttpClient.newHttpClient();
+  HttpRequest request = HttpRequest.newBuilder()
+          .uri(URI.create("https://api.github.com"))
+          .build();
+  HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+  ```
+3. String API Enhancements:
+  a) `isBlank()`
+  b) `lines()`
+  c) `repeat(n)`
+  d) `strip(), stripLeading(), stripTrailing()`
+
+4. New Files Methods:
+   `Files.writeString()`, `Files.readString()`
+
+5. Run single-file Java programs without compilation step:
+
+  ```bash
+  java Hello.java
+  ```
+6. Removed Java EE & CORBA modules
+7. Flight Recorder & Mission Control (for profiling/monitoring)
+
+---Java 17 (2021) – Modern LTS & Language Evolution
+Java 17 is the latest LTS before 21, consolidating preview features into standard ones.
+
+Major Features:
+1. Sealed Classes → restrict inheritance
+  ```java
+  public sealed class Shape permits Circle, Square {}
+  public final class Circle extends Shape {}
+  public final class Square extends Shape {}
+  ```
+  
+2. Pattern Matching for `instanceof`
+  ```java
+  if (obj instanceof String s) {
+      System.out.println(s.toUpperCase());
+  }
+  ```
+  
+3. Text Blocks (from Java 15) → multi-line strings
+  ```java
+  String json = """
+      {
+        "name": "Alice",
+        "age": 30
+      }
+      """;
+  ```
+  
+4. Switch Expressions (from Java 14, finalized in 17)
+  ```java
+  String dayType = switch (day) {
+      case MONDAY, FRIDAY -> "Workday";
+      case SATURDAY, SUNDAY -> "Weekend";
+      default -> "Midweek";
+  };
+  ```
+  
+5. Records (finalized) → concise data carriers
+  ```java
+  public record User(String name, int age) {}
+  ```
+  
+6. JEP 356: Enhanced Pseudo-Random Number Generators
+7. Strong Encapsulation of JDK Internals (`--illegal-access` removed)
+
 
 ----------------------------------------------------------------------------
 
@@ -495,7 +586,7 @@ Spring & Spring Boot Interview Questions & Answers (51–90)
 * `@ResponseBody`: Converts Java object to JSON/XML in response.
 * `@RequestBody`: Converts JSON/XML from request body into a Java object.
 * Together they enable seamless REST communication.
-
+* In essence, @RequestBody handles data coming into your application from the client, while @ResponseBody handles data going out of your application to the client.
 ---
 
  62. Explain exception handling in Spring Boot.
@@ -551,6 +642,7 @@ Spring & Spring Boot Interview Questions & Answers (51–90)
 * Use `Pageable` and `Page` interfaces.
 * Example: `Page<User> users = userRepo.findAll(PageRequest.of(0, 10));`.
 * Supports sorting and custom query pagination.
+Pagination: A mechanism used to divide large datasets into smaller, more manageable chunks or "pages," for efficient retrieval and display. This approach is crucial for applications handling significant amounts of data as it improves performance, reduces memory consumption, and enhances user experience.
 
 ---
 
@@ -656,6 +748,19 @@ Spring & Spring Boot Interview Questions & Answers (51–90)
 * Configure CORS policies for frontend-backend communication.
 * Validate inputs to prevent CSRF, XSS, and SQL injection.
 
+Basic Auth → Username & password are sent with every request (simple, less secure).
+JWT (JSON Web Token) → Token-based stateless authentication, widely used in modern APIs.
+OAuth2 → Authorization framework for secure delegated access (e.g., login via Google).
+
+CORS (Cross-Origin Resource Sharing)
+	Restricts or allows requests from different domains (frontend ↔ backend).
+	Must be configured so your frontend (e.g., React, Angular) can call Spring Boot APIs safely.
+
+Input Validation & Security Attacks
+	CSRF (Cross-Site Request Forgery) → Prevent by using CSRF tokens in requests.
+	XSS (Cross-Site Scripting) → Prevent by sanitizing user inputs & escaping output in UI.
+	SQL Injection → Prevent by using parameterized queries / JPA instead of string concatenation.
+	
 ---
 
  81. What is HATEOAS in REST APIs?
@@ -1317,6 +1422,342 @@ REST APIs & Web Interview Questions & Answers (116–135)
 * Helm charts are templates for deploying complex apps (with configs, services, deployments).
 * Simplifies repeatable, consistent deployments of microservices.
 
+----------------------------------------------------------------------------
+
+ Agile Interview Questions & Answers (161–172)
+
 ---
+
+ 161. What is Agile methodology?
+
+* Agile is an iterative and incremental approach to software development.
+* Focuses on collaboration, customer feedback, and small, rapid releases.
+* Popular frameworks: Scrum, Kanban, SAFe.
+
+---
+
+ 162. Difference between Agile and Waterfall.
+
+* Waterfall: Sequential, rigid phases (Requirement → Design → Development → Testing → Deployment).
+* Agile: Iterative, flexible, continuous feedback, and fast delivery.
+* Agile handles changing requirements better than Waterfall.
+
+---
+
+ 163. What are Scrum roles?
+
+* Product Owner: Defines vision, manages backlog.
+* Scrum Master: Facilitates Scrum ceremonies, removes blockers.
+* Development Team: Builds and delivers product increments.
+
+---
+
+ 164. What are Scrum ceremonies?
+
+* Sprint Planning: Define sprint goals & tasks.
+* Daily Standup: 15-min status sync (yesterday, today, blockers).
+* Sprint Review: Demonstrate increment to stakeholders.
+* Sprint Retrospective: Reflect and improve team process.
+
+---
+
+ 165. What is a user story?
+
+* A user story describes a feature from the end-user perspective.
+* Format: *“As a \[role], I want \[goal] so that \[benefit].”*
+* Helps ensure development focuses on business value.
+
+---
+
+ 166. What is a sprint backlog vs product backlog?
+
+* Product Backlog: Ordered list of all desired features (maintained by Product Owner).
+* Sprint Backlog: Subset of backlog items chosen for current sprint.
+* Sprint backlog = actionable tasks for the sprint.
+
+---
+
+ 167. What is velocity in Agile?
+
+* Velocity = measure of completed story points per sprint.
+* Helps predict team capacity for future sprints.
+* Example: If a team completes 30 points in Sprint 1, their velocity = 30.
+
+---
+
+ 168. What is Definition of Done (DoD)?
+
+* A shared checklist that ensures work is complete.
+* Includes coding, testing, documentation, and deployment readiness.
+* Prevents incomplete or low-quality work from being marked as "done".
+
+---
+
+ 169. Difference between epic, story, and task.
+
+* Epic: Large feature spanning multiple sprints.
+* Story: User-focused requirement (small enough for sprint).
+* Task: Technical activity to implement a story.
+
+---
+
+ 170. What is backlog grooming/refinement?
+
+* Ongoing process of reviewing and prioritizing backlog items.
+* Ensures items are clear, estimated, and ready for sprint planning.
+* Involves Product Owner and development team.
+
+---
+
+ 171. What is pair programming?
+
+* Two developers work on the same code: Driver writes code, Navigator reviews.
+* Improves code quality, knowledge sharing, and collaboration.
+* Common in Agile/XP (Extreme Programming).
+
+----------------------------------------------------------------------------
+ Software Engineering Questions & Answers (172–180)
+ 
+--- 
+ 172. What are design patterns? Why are they useful?
+
+* Design patterns are reusable solutions to common software design problems.
+* Examples: Singleton, Factory, Observer, Strategy.
+* They improve maintainability, readability, and reduce reinventing the wheel.
+
+---
+
+ 173. Difference between design patterns and frameworks.
+
+* Design Pattern: General reusable solution, not tied to a language.
+* Framework: Ready-to-use codebase/toolset (e.g., Spring Boot, Angular).
+* Patterns = guidance, Frameworks = actual implementation.
+
+---
+
+ 174. Explain SOLID principles.
+
+* Single Responsibility: Class should have one responsibility.
+* Open-Closed: Open for extension, closed for modification.
+* Liskov Substitution: Subclasses should be replaceable by parents.
+* Interface Segregation: No forcing unused methods.
+* Dependency Inversion: Depend on abstractions, not implementations.
+
+---
+
+ 175. What is code review? Benefits?
+
+* Code review = peer review of code before merging.
+* Benefits: catches bugs early, improves code quality, promotes knowledge sharing.
+* Tools: GitHub PRs, GitLab MR, Gerrit.
+
+---
+
+ 176. What is technical debt?
+
+* Technical debt = shortcuts or poor solutions taken to deliver faster.
+* Leads to harder maintenance and reduced agility.
+* Needs balancing between speed and long-term quality.
+
+---
+
+ 177. What are unit testing, integration testing, system testing?
+
+* Unit Testing: Tests individual methods/classes (JUnit).
+* Integration Testing: Tests interaction between modules (Spring Boot Test).
+* System Testing: Tests entire application as a whole.
+
+---
+
+ 178. What is TDD (Test-Driven Development)?
+
+* Process: Write test → Write code → Refactor → Repeat.
+* Ensures code meets requirements from the start.
+* Leads to high coverage and fewer defects.
+
+---
+
+ 179. What is BDD (Behavior-Driven Development)?
+
+* BDD extends TDD by writing tests in natural language (Given-When-Then).
+* Tools: Cucumber, JBehave.
+* Improves collaboration between developers, testers, and business.
+
+---
+
+ 180. How do you ensure code quality in projects?
+
+* Follow coding standards & guidelines.
+* Use automated testing (unit + integration).
+* Perform code reviews, static analysis (SonarQube), and CI pipelines.
+
+----------------------------------------------------------------------------
+
+ Behavioral & HR Interview Questions & Answers (181–200)
+
+---
+
+ 181. Tell me about yourself.
+
+* I am a software engineer with \~3 years of backend development experience in Java, Spring Boot, REST APIs, and SQL.
+* Currently working as Senior Software Developer at Capgemini (Client: UBS), focusing on financial systems.
+* I also have hands-on exposure to cloud (AWS), Docker, Kubernetes, and CI/CD pipelines.
+
+---
+
+ 182. Why do you want to work at this company?
+
+* I admire the company’s innovation and engineering culture.
+* The role aligns with my expertise in Java backend systems and cloud-native applications.
+* I’m excited about opportunities to contribute, learn, and grow in a challenging environment.
+
+---
+
+ 183. What are your strengths?
+
+* Strong problem-solving and debugging skills in backend systems.
+* Quick learner who adapts fast to new technologies (e.g., Java 17, AWS, Kubernetes).
+* Good collaborator in Agile teams, balancing feature development and production support.
+
+---
+
+ 184. What are your weaknesses?
+
+* I used to spend too much time perfecting details, which slowed delivery.
+* Now, I focus on delivering iteratively and improving based on feedback.
+* I treat it as a growth area rather than a blocker.
+
+---
+
+ 185. Tell me about a challenge you faced and how you solved it.
+
+* During UBS project migration from RHEL7 to RHEL8, we faced compatibility issues.
+* I analyzed logs, identified missing libraries, and worked with infra team to resolve.
+* The migration was completed smoothly with minimal downtime.
+
+---
+
+ 186. Tell me about a time you led a team.
+
+* In Capgemini training, I led a 4-member team for a Java + AWS + Docker project.
+* I handled sprint planning, environment setup, and DevOps pipeline integration.
+* We delivered a fully functional containerized app within deadlines.
+
+---
+
+ 187. Tell me about a time you failed.
+
+* Early in my internship, I deployed a buggy API without thorough testing.
+* It caused issues in QA, and I learned the importance of unit + integration tests.
+* Since then, I always ensure automated testing before deployment.
+
+---
+
+ 188. How do you handle tight deadlines?
+
+* Break down work into smaller tasks and prioritize critical features.
+* Collaborate closely with the team to remove blockers.
+* Maintain focus and avoid over-engineering during delivery crunch.
+
+---
+
+ 189. How do you handle conflicts in a team?
+
+* Listen to both perspectives without bias.
+* Focus on the common project goal rather than personal opinions.
+* Suggest compromises or escalate constructively if needed.
+
+---
+
+ 190. How do you stay updated with new technologies?
+
+* Follow tech blogs, official documentation, and YouTube channels.
+* Take online courses (Udemy, Coursera) and hands-on practice via personal projects.
+* Actively explore AWS, Kubernetes, and AI/GenAI tools in side projects.
+
+---
+
+ 191. Why should we hire you?
+
+* I bring solid backend expertise (Java, Spring Boot, SQL) with proven enterprise experience.
+* I also have practical knowledge of cloud, DevOps, and microservices.
+* My adaptability, quick learning, and team contribution make me a strong fit.
+
+---
+
+ 192. Where do you see yourself in 5 years?
+
+* I see myself as a technical leader/architect specializing in cloud-native enterprise applications.
+* I want to guide teams in building scalable, high-performance backend systems.
+* Also, I aim to mentor junior developers and contribute to open-source projects.
+
+---
+
+ 193. Why are you leaving your current company?
+
+* I have learned a lot at Capgemini, but now I’m seeking new challenges and responsibilities.
+* I want to work in an environment where I can grow faster and contribute to impactful projects.
+* Looking for a role that provides both technical depth and leadership opportunities.
+
+---
+
+ 194. What do you know about our company?
+
+* The company is recognized for its innovation and strong engineering culture.
+* It works on cutting-edge solutions in cloud, fintech, and enterprise applications.
+* I’ve read about your focus on scalability, microservices, and customer-first approach.
+
+---
+
+ 195. How do you handle stress at work?
+
+* I prioritize tasks, break them down, and tackle them systematically.
+* Take short breaks and maintain work-life balance to avoid burnout.
+* Communicate openly with team and manager when workload is high.
+
+---
+
+ 196. How do you manage multiple tasks/projects?
+
+* Use Agile methods: sprint planning, JIRA, and daily standups.
+* Focus on one high-priority task at a time, while tracking others.
+* Avoid multitasking unless tasks are truly independent.
+
+---
+
+ 197. How do you ensure work-life balance?
+
+* Plan work efficiently to avoid unnecessary late hours.
+* Set boundaries and use personal time for rest, family, and hobbies.
+* Believe in sustainable productivity rather than overworking.
+
+---
+
+ 198. Tell me about a successful project you worked on.
+
+* UBS DMSI system migration project: I worked on Java 17, Spring Boot, Oracle DB, REST APIs.
+* Contributed to bug fixing, ideation, build & release process, and client discussions.
+* The project stabilized critical reference data with high availability.
+
+---
+
+ 199. How do you handle feedback and criticism?
+
+* I view feedback as an opportunity to improve.
+* I listen carefully, clarify if needed, and apply suggestions.
+* For example, I improved my API documentation style after feedback from a senior.
+
+---
+
+ 200. Do you have any questions for us?
+
+* Yes, I’d like to know:
+
+  1. What technologies or projects will I be working on initially?
+  2. How does the company support career growth and learning opportunities?
+  3. What qualities do you value most in your engineering team members?
+
+---
+
 
 
