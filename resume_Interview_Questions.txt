@@ -1759,5 +1759,549 @@ REST APIs & Web Interview Questions & Answers (116–135)
 
 ---
 
+list of coding/hands-on questions (grouped by area) that you may be asked:
+
+---
+
+ 1. Core Java (OOPs, Collections, Concurrency)
+
+	1. Write a program to implement LRU Cache using `LinkedHashMap`.
+	2. Implement a thread-safe Singleton in Java.
+	3. Write a program to detect if a string is a valid palindrome ignoring special characters.
+	4. Implement a program to find duplicate elements in a list.
+	5. Sort a list of employees by salary, then by name using `Comparator`.
+	6. Implement a producer-consumer problem using `wait()` and `notify()`.
+	7. Write a program to count the frequency of words in a paragraph.
+	8. Implement a custom exception handling example.
+	9. Find the first non-repeating character in a string.
+	10. Implement a program to use CompletableFuture for async tasks.
+
+---
+
+ 2. Data Structures & Algorithms (Java-specific)
+
+	11. Reverse a linked list iteratively and recursively.
+	12. Find the middle element of a linked list.
+	13. Detect a cycle in a linked list (Floyd’s algorithm).
+	14. Merge two sorted arrays without using extra space.
+	15. Find the longest substring without repeating characters.
+	16. Implement binary search and show time complexity.
+	17. Implement a min-heap/max-heap in Java.
+	18. Given a rotated sorted array, find the minimum element.
+	19. Implement a program to check if two strings are anagrams.
+	20. Solve the two-sum problem using HashMap.
+
+---
+
+ 3. SQL & Database
+
+	21. Write SQL to find the second highest salary from Employee table.
+	22. Query to find employees with duplicate emails.
+	23. Query to find Nth highest salary.
+	24. Write a query to pivot employee data by department.
+	25. Explain and write query for joins (INNER, LEFT, RIGHT, FULL).
+	26. Write a query to get employees who joined in the last 30 days.
+	27. Write a query using window functions (RANK, ROW\_NUMBER).
+	28. Query to find employees who don’t have managers.
+	29. Write query to update multiple records using CASE WHEN.
+	30. Write query to find employees working in more than one project.
+
+---
+
+ 4. Spring & Spring Boot (Hands-on)
+
+	31. Write a REST API in Spring Boot for CRUD operations on `Employee`.
+	32. Implement global exception handling using `@ControllerAdvice`.
+	33. Implement Spring Boot logging using `Slf4j`.
+	34. Write a program to use Spring Profiles (dev, test, prod).
+	35. Show how to implement DTO + ModelMapper for REST API responses.
+	36. Create an API endpoint to upload and download a CSV/Excel file.
+	37. Implement pagination and sorting in Spring Data JPA.
+	38. Write a Spring Boot Scheduler that runs every 10 seconds.
+	39. Create a REST API secured with JWT.
+	40. Expose a Spring Boot API and test it with Postman.
+
+---
+
+ 5. Microservices & Cloud (AWS, Docker, Kubernetes)
+
+	41. Design a microservice for Instrument Reference Data Service (similar to your personal project).
+	42. Write Dockerfile for a Spring Boot application.
+	43. Write Kubernetes YAML for deploying your service with 2 replicas.
+	44. Explain how you’d use AWS RDS with Spring Boot.
+	45. How would you implement health checks in a microservice?
+	46. Create an API that publishes an event to Kafka.
+	47. Write CI/CD pipeline steps for GitHub Actions → Docker → AWS ECR → EKS.
+	48. Explain how to configure Spring Boot with AWS S3 (file upload/download).
+	49. Show how you’d externalize configuration using Spring Cloud Config.
+	50. Implement rate limiting in Spring Boot microservice (e.g., Bucket4j).
+
+---
+
+ 6. System Design / Scenario-based
+
+	51. Design a system for user authentication using OAuth2 + JWT.
+	52. Design a high-availability microservice architecture for your DMSI project.
+	53. Explain how you’d design a bulk ingestion pipeline for CSV uploads.
+	54. How would you design a notification system (SMS/Email) in microservices?
+	55. Design a payment transaction service ensuring ACID properties.
+
+---
+
+ 7. Testing & DevOps
+
+	56. Write a JUnit test for a REST API controller.
+	57. Write a Mockito test for a service layer method.
+	58. Show how to use Testcontainers to test with PostgreSQL in Spring Boot.
+	59. Implement API contract testing with Swagger/OpenAPI.
+	60. Write Git commands to: clone, branch, merge, resolve conflicts.
+
+--- These are 60 coding/hands-on challenges that directly align with your resume and projects.
+
+----------------------------------------------------------------------------
+
+most commonly asked 20 hands-on problems (mix of Java, Spring Boot, SQL, and microservices):
+=================
+
+ 1. LRU Cache using LinkedHashMap
+
+	```java
+	import java.util.*;
+
+	class LRUCache<K, V> extends LinkedHashMap<K, V> {
+		private final int capacity;
+
+		public LRUCache(int capacity) {
+			super(capacity, 0.75f, true); // accessOrder = true
+			this.capacity = capacity;
+		}
+
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+			return size() > capacity;
+		}
+
+		public static void main(String[] args) {
+			LRUCache<Integer, String> cache = new LRUCache<>(3);
+			cache.put(1, "A"); cache.put(2, "B"); cache.put(3, "C");
+			cache.get(1); // Access 1 → makes it recent
+			cache.put(4, "D"); // Evicts key 2
+			System.out.println(cache.keySet()); // [3, 1, 4]
+		}
+	}
+	```
+
+---
+
+ 2. Thread-safe Singleton
+
+	```java
+	class Singleton {
+		private static volatile Singleton instance; //1
+
+		private Singleton() {} //2
+
+		public static Singleton getInstance() { //3
+			if (instance == null) {
+				synchronized (Singleton.class) {
+					if (instance == null)
+						instance = new Singleton();
+				}
+			}
+			return instance;
+		}
+	}
+	```
+
+---
+
+ 3. First Non-Repeating Character
+
+	```java
+	import java.util.*;
+
+	public class FirstUniqueChar {
+		public static char find(String s) {
+			Map<Character, Integer> freq = new LinkedHashMap<>();
+			for (char c : s.toCharArray()) freq.put(c, freq.getOrDefault(c, 0) + 1);
+			for (char c : freq.keySet()) if (freq.get(c) == 1) return c;
+			return '_';
+		}
+
+		public static void main(String[] args) {
+			System.out.println(find("swiss")); // w
+		}
+	}
+	```
+
+---
+
+ 4. Detect Cycle in Linked List (Floyd’s Algorithm)
+
+	```java
+	class ListNode {
+		int val;
+		ListNode next;
+		ListNode(int val) { this.val = val; }
+	}
+
+	public class CycleDetection {
+		public boolean hasCycle(ListNode head) {
+			ListNode slow = head, fast = head;
+			while (fast != null && fast.next != null) {
+				slow = slow.next;
+				fast = fast.next.next;
+				if (slow == fast) return true;
+			}
+			return false;
+		}
+	}
+	```
+
+---
+
+ 5. Two-Sum Problem
+
+	```java
+	import java.util.*;
+
+	public class TwoSum {
+		public static int[] find(int[] nums, int target) {
+			Map<Integer, Integer> map = new HashMap<>();
+			for (int i = 0; i < nums.length; i++) {
+				int diff = target - nums[i];
+				if (map.containsKey(diff)) return new int[]{map.get(diff), i};
+				map.put(nums[i], i);
+			}
+			return new int[]{-1, -1};
+		}
+	}
+	```
+
+---
+
+ 6. SQL – Find 2nd Highest Salary
+
+	```sql
+	SELECT MAX(salary) AS second_highest_salary
+	FROM employees
+	WHERE salary < (SELECT MAX(salary) FROM employees);
+	```
+
+---
+
+ 7. SQL – Find Nth Highest Salary (e.g., 3rd highest)
+
+	```sql
+	SELECT DISTINCT salary
+	FROM employees e1
+	WHERE 3 = (
+		SELECT COUNT(DISTINCT salary) 
+		FROM employees e2 
+		WHERE e2.salary >= e1.salary
+	);
+	```
+
+---
+
+ 8. Spring Boot – CRUD REST API (Employee Example)
+
+ `Employee.java`
+
+	```java
+	import jakarta.persistence.*;
+	import lombok.*;
+
+	@Entity
+	@Data
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public class Employee {
+		@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+		private Long id;
+		private String name;
+		private Double salary;
+	}
+	```
+
+ `EmployeeRepository.java`
+
+	```java
+	import org.springframework.data.jpa.repository.JpaRepository;
+
+	public interface EmployeeRepository extends JpaRepository<Employee, Long> {}
+	```
+
+ `EmployeeController.java`
+
+	```java
+	import org.springframework.web.bind.annotation.*;
+	import java.util.*;
+
+	@RestController
+	@RequestMapping("/employees")
+	public class EmployeeController {
+		private final EmployeeRepository repo;
+
+		public EmployeeController(EmployeeRepository repo) {
+			this.repo = repo;
+		}
+
+		@GetMapping
+		public List<Employee> getAll() { return repo.findAll(); }
+
+		@GetMapping("/{id}")
+		public Employee getById(@PathVariable Long id) {
+			return repo.findById(id).orElseThrow();
+		}
+
+		@PostMapping
+		public Employee save(@RequestBody Employee e) { return repo.save(e); }
+
+		@PutMapping("/{id}")
+		public Employee update(@PathVariable Long id, @RequestBody Employee e) {
+			e.setId(id);
+			return repo.save(e);
+		}
+
+		@DeleteMapping("/{id}")
+		public void delete(@PathVariable Long id) { repo.deleteById(id); }
+	}
+	```
+
+---
+
+ 9. Global Exception Handling in Spring Boot
+
+	```java
+	import org.springframework.http.*;
+	import org.springframework.web.bind.annotation.*;
+
+	@ControllerAdvice
+	public class GlobalExceptionHandler {
+		@ExceptionHandler(Exception.class)
+		public ResponseEntity<String> handleException(Exception ex) {
+			return new ResponseEntity<>("Error: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	```
+
+---
+
+	 10. JWT Authentication – Filter Example
+
+	```java
+	import jakarta.servlet.*;
+	import jakarta.servlet.http.*;
+	import java.io.IOException;
+
+	public class JwtFilter implements Filter {
+		@Override
+		public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+				throws IOException, ServletException {
+			HttpServletRequest req = (HttpServletRequest) request;
+			String token = req.getHeader("Authorization");
+			if (token == null || !token.startsWith("Bearer ")) {
+				((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
+				return;
+			}
+			chain.doFilter(request, response);
+		}
+	}
+	```
+
+---
+
+ 11. Pagination in Spring Data JPA
+
+	```java
+	@GetMapping("/paged")
+	public Page<Employee> getPaged(@RequestParam int page, @RequestParam int size) {
+		return repo.findAll(PageRequest.of(page, size, Sort.by("salary").descending()));
+	}
+	```
+
+---
+
+ 12. Spring Boot Scheduler
+
+```java
+import org.springframework.scheduling.annotation.*;
+
+@EnableScheduling
+@SpringBootApplication
+public class DemoApplication {}
+
+@Component
+class ScheduledTasks {
+    @Scheduled(fixedRate = 10000)
+    public void runTask() {
+        System.out.println("Task running every 10s");
+    }
+}
+```
+
+---
+
+ 13. Kafka Producer in Spring Boot
+
+	```java
+	import org.springframework.kafka.core.KafkaTemplate;
+	import org.springframework.web.bind.annotation.*;
+
+	@RestController
+	public class KafkaController {
+		private final KafkaTemplate<String, String> kafkaTemplate;
+
+		public KafkaController(KafkaTemplate<String, String> kafkaTemplate) {
+			this.kafkaTemplate = kafkaTemplate;
+		}
+
+		@PostMapping("/publish")
+		public String send(@RequestParam String msg) {
+			kafkaTemplate.send("topic1", msg);
+			return "Sent: " + msg;
+		}
+	}
+	```
+
+---
+
+ 14. Dockerfile for Spring Boot App
+
+	```dockerfile
+	FROM openjdk:17-jdk-slim
+	WORKDIR /app
+	COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+	ENTRYPOINT ["java","-jar","/app/app.jar"]
+	```
+
+---
+
+ 15. Kubernetes Deployment YAML
+
+	```yaml
+	apiVersion: apps/v1
+	kind: Deployment
+	metadata:
+	  name: employee-service
+	spec:
+	  replicas: 2
+	  selector:
+		matchLabels:
+		  app: employee-service
+	  template:
+		metadata:
+		  labels:
+			app: employee-service
+		spec:
+		  containers:
+		  - name: employee-service
+			image: myrepo/employee-service:latest
+			ports:
+			- containerPort: 8080
+	```
+
+---
+
+ 16. CompletableFuture Example
+
+	```java
+	import java.util.concurrent.*;
+
+	public class AsyncExample {
+		public static void main(String[] args) throws Exception {
+			CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+				return "Hello from async task!";
+			});
+			System.out.println(future.get());
+		}
+	}
+	```
+
+---
+
+ 17. Word Frequency Counter
+
+	```java
+	import java.util.*;
+
+	public class WordCount {
+		public static void main(String[] args) {
+			String text = "Java Spring Java Docker AWS";
+			Map<String, Integer> map = new HashMap<>();
+			for (String word : text.split(" ")) {
+				map.put(word, map.getOrDefault(word, 0) + 1);
+			}
+			System.out.println(map); // {Java=2, Spring=1, Docker=1, AWS=1}
+		}
+	}
+	```
+
+---
+
+ 18. Producer-Consumer Problem
+
+	```java
+	import java.util.concurrent.*;
+
+	public class ProducerConsumer {
+		private final BlockingQueue<Integer> queue = new ArrayBlockingQueue<>(5);
+
+		public void produce() throws InterruptedException {
+			int value = 0;
+			while (true) {
+				queue.put(value);
+				System.out.println("Produced " + value);
+				value++;
+				Thread.sleep(1000);
+			}
+		}
+
+		public void consume() throws InterruptedException {
+			while (true) {
+				int val = queue.take();
+				System.out.println("Consumed " + val);
+				Thread.sleep(1500);
+			}
+		}
+
+		public static void main(String[] args) {
+			ProducerConsumer pc = new ProducerConsumer();
+			new Thread(() -> { try { pc.produce(); } catch (Exception ignored) {} }).start();
+			new Thread(() -> { try { pc.consume(); } catch (Exception ignored) {} }).start();
+		}
+	}
+	```
+
+---
+
+ 19. SQL – Employees who joined in last 30 days
+
+	```sql
+	SELECT * 
+	FROM employees
+	WHERE join_date >= CURRENT_DATE - INTERVAL '30 days';
+	```
+
+---
+
+ 20. System Design – Bulk CSV Upload (Spring Boot Endpoint)
+
+```java
+@PostMapping("/upload")
+public String uploadCSV(@RequestParam("file") MultipartFile file) throws Exception {
+    BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+    String line;
+    while ((line = reader.readLine()) != null) {
+        String[] data = line.split(",");
+        // save data[0], data[1] to DB
+    }
+    return "File uploaded successfully";
+}
+```
+
+---
+
 
 
