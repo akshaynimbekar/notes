@@ -827,7 +827,7 @@ Later, we can *extend to async* with a job table + scheduler/queue.
 								.ticker(record.get("ticker"))
 								.exchange(record.get("exchange"))
 								.currency(record.get("currency"))
-								.build();
+								.build(); // I have not used Builder pattern as Lombok is not working on my system, so I have used setter like(instrument.setIsin(record.get("isin"));) REFER code prom project. Keeping this code as builder is a design pattern, mostly asked in interview
 						instruments.add(instrument);
 						successCount++;
 					} catch (Exception e) {
@@ -1223,6 +1223,7 @@ Response:
 	* Realistic *job tracking* mechanism.
 
 ============================================================================
+
 10. Auditing
     * Enable JPA Auditing (`createdBy`, `updatedBy`, timestamps)
     * Store change history in `instrument_audit` table (or Envers)
@@ -1408,44 +1409,6 @@ id | isin         | cusip     | ticker | exchange | currency | rev | revtype
 
 ---
 
- ✅ Step 7: Accessing Audit History (Optional)
-
-If you want to fetch audit history in code:
-
-📂 `InstrumentAuditService.java`
-
-```java
-import org.hibernate.envers.AuditReader;
-import org.hibernate.envers.AuditReaderFactory;
-import org.springframework.stereotype.Service;
-
-import jakarta.persistence.EntityManager;
-import java.util.List;
-
-@Service
-public class InstrumentAuditService {
-
-    private final EntityManager entityManager;
-
-    public InstrumentAuditService(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
-
-    public List<Object[]> getAuditHistory(Long instrumentId) {
-        AuditReader reader = AuditReaderFactory.get(entityManager);
-        return reader.createQuery()
-                .forRevisionsOfEntity(Instrument.class, false, true)
-                .addProjection(org.hibernate.envers.query.AuditEntity.id())
-                .addProjection(org.hibernate.envers.query.AuditEntity.revisionNumber())
-                .addProjection(org.hibernate.envers.query.AuditEntity.revisionType())
-                .add(org.hibernate.envers.query.AuditEntity.id().eq(instrumentId))
-                .getResultList();
-    }
-}
-```
-
----
-
  ✅ Example API Usage
 
 * Create Instrument → Inserted in `instruments` & `instruments_AUD` (revtype=0).
@@ -1458,10 +1421,64 @@ public class InstrumentAuditService {
 
 * Automatic auditing (`createdBy`, `updatedBy`, timestamps).
 * Full change history (`instrument_AUD` table).
+* tables created: 
+	SELECT * FROM instruments;
+	SELECT * FROM instruments_AUD;
+	SELECT * FROM revinfo;
+
+
+Adding Put Api: 
+
+1. InstrumentService:
+
+	public InstrumentResponseDto updateInstrument(Long id, InstrumentRequestDto dto) {
+		Instrument instrument = instrumentRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Instrument not found with id " + id));
+
+		instrument.setIsin(dto.getIsin());
+		instrument.setCusip(dto.getCusip());
+		instrument.setTicker(dto.getTicker());
+		instrument.setExchange(dto.getExchange());
+		instrument.setCurrency(dto.getCurrency());
+
+		Instrument updated = instrumentRepository.save(instrument);
+		return InstrumentMapper.toDto(updated);
+	}
+
+2. InstrumentController.java
+
+	@PutMapping("/{id}")
+	public ResponseEntity<InstrumentResponseDto> updateInstrument(
+			@PathVariable Long id,
+			@RequestBody InstrumentRequestDto dto) {
+		return ResponseEntity.ok(instrumentService.updateInstrument(id, dto));
+	}
+
+To test:
+1. PUT http://localhost:8080/api/instruments/1
+
+Content-Type: application/json
+{
+  "isin": "US0378331006",
+  "cusip": "037833100",
+  "ticker": "AAPLTest",
+  "exchange": "NYSE",
+  "currency": "USD"
+}
+Check DB: SELECT * FROM instruments_AUD WHERE id = 1(change id);
+
+2. delete instrument: DELETE http://localhost:8080/api/instruments/1
+check db: SELECT * FROM instruments_AUD WHERE id = 1(change id); 
+
+3. check instrument and instrument_AUD table
+
+----------------------------------------------------------------------------
+
+* Accesing Audit History through API
 
 ---
 
-👉 Do you want me to add an *API to fetch audit history* for an instrument (`/api/instruments/{id}/audit`) so you can demo it in Postman?
+
 
 
 

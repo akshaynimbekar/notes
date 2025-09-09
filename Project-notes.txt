@@ -578,7 +578,7 @@ We’re not just writing code — we’re designing a *searchable, paginated, sc
 
 ---
 
-# 🔍 Search API Design (for Instruments)
+ 🔍 Search API Design (for Instruments)
 
  1. *The Why*
 	A financial reference-data service is useless if it can’t *query efficiently by business identifiers*.
@@ -595,7 +595,7 @@ This mirrors *real capital markets systems* (Bloomberg, Refinitiv, Markit), wher
 ---
  2. *The How*
 
-# 🔹 `JpaSpecificationExecutor`
+ 🔹 `JpaSpecificationExecutor`
 	Spring Data JPA ships with *`JpaSpecificationExecutor`*, which is basically a *DSL for dynamic query building*.
 	Instead of writing one `findByIsinAndTickerAndExchange(...)` method for every permutation (impossible to scale), we compose *Specifications* at runtime:
 	```java
@@ -611,7 +611,7 @@ Think of it like building a *query tree* dynamically. Each `hasXxx` returns a `P
 This is *cleaner than Criteria API* (which is verbose), and avoids *string-concatenated JPQL* (which is unsafe).
 
 
-# 🔹 Pagination & Sorting
+ 🔹 Pagination & Sorting
 	Spring gives us `Pageable` abstraction:
 
 * `page` → zero-based index
@@ -635,7 +635,7 @@ This translates into SQL:
 → That’s enterprise-ready out of the box.
 
 
-# 🔹 DTO + Mapper
+ 🔹 DTO + Mapper
 	We map the *JPA Entity → Response DTO* so clients don’t see internal database artifacts.
 
 This ensures:
@@ -648,12 +648,12 @@ This ensures:
 
 Let’s trace a request end-to-end:
 
-# Request
+ Request
 	```
 	GET /api/instruments/search?isin=US0378331005&currency=USD&page=0&size=5&sort=ticker,desc
 	```
 
-# Controller
+ Controller
 	```java
 	@GetMapping("/search")
 	public ResponseEntity<Page<InstrumentResponseDto>> searchInstruments(
@@ -679,7 +679,7 @@ What happens here?
 	Results come back.
 
 ---
-# Service
+ Service
 	```java
 	Specification<Instrument> spec = Specification.where(InstrumentSpecification.hasIsin(isin))
 			.and(InstrumentSpecification.hasTicker(ticker))
@@ -696,7 +696,7 @@ What happens here?
 	pageable tells it page number, size, and sort.
 
 ---
-# Repository
+ Repository
 	```java
 	public interface InstrumentRepository extends JpaRepository<Instrument, Long>, JpaSpecificationExecutor<Instrument> {
 	}
@@ -707,7 +707,7 @@ What happens here?
 
 
 ---
-# Specification
+ Specification
 	```java
 	public static Specification<Instrument> hasIsin(String isin) {
 		return (root, query, cb) ->
@@ -775,7 +775,8 @@ Ways to achieve:
 1. *Synchronous bulk upload*
 2. *Asynchronous bulk upload*
 
----
+---1---Synchronous Bulk Upload
+
 ✅ 1. Synchronous Bulk Upload
 ---
 * *Synchronous = Happens in one request-response cycle.*
@@ -788,7 +789,7 @@ Ways to achieve:
 
 ---
 
-# ✅ 2. Flow of Synchronous Bulk Upload
+ ✅ 2. Flow of Synchronous Bulk Upload
 
  Step 1: Client Sends File
 	* Request: `POST /api/instruments/upload`
@@ -833,7 +834,7 @@ Ways to achieve:
 	Ensures client always gets a *structured JSON response*.
 
 
-# ✅ 3. Key Concepts Behind the Code
+ ✅ 3. Key Concepts Behind the Code
 
 * *`MultipartFile`*
   * Spring Boot abstraction for handling uploaded files.
@@ -855,8 +856,10 @@ Ways to achieve:
   * Makes response predictable & easy to consume.
 
 ----------------------------------------------------------------------------
- 🚦 Why Asynchronous Bulk Upload?
 
+---2---Asynchronous Bulk Upload
+
+Why Asynchronous Bulk Upload?
 * *Synchronous (blocking)*:
   * Client uploads a CSV.
   * API parses + saves all rows before responding.
@@ -871,19 +874,19 @@ Ways to achieve:
   * Standard in *enterprise apps* (batch imports, ETL, data migration).
 
 ---
-# 🏗️ Key Concepts in Our Implementation"
+ ️ Key Concepts in Our Implementation"
 
-# 1. Job Tracking
+ 1. Job Tracking
 	We created an *entity `BulkUploadJob`* to store:
 	* `status` (PENDING, IN\_PROGRESS, COMPLETED, FAILED)
 	* counts (success/failure rows)
 	* error log
 	* timestamps
 
-📍 This makes the process *auditable* and *trackable*.
+ This makes the process *auditable* and *trackable*.
 
 
-# 2. Async Execution with `@Async`
+ 2. Async Execution with `@Async`
 	Spring Boot lets us run methods in a *background thread pool* using `@Async`.
 	We also enable it with `@EnableAsync` at the service level.
 	
@@ -899,13 +902,13 @@ Ways to achieve:
 	* Client polls for status.
 
 
-# 3. DTO Layer
+ 3. DTO Layer
 	We don’t expose JPA entities directly.
 	Instead, we map `BulkUploadJob` → `BulkUploadJobResponse` DTO for API response
 	This ensures *API stability* even if our entity changes.
 
 
-# 4. File Parsing (CSV)
+ 4. File Parsing (CSV)
 	We reused *Apache Commons CSV* parser (same as synchronous upload), but wrapped in a background job:
 
 	```java
@@ -929,10 +932,10 @@ Ways to achieve:
 	}
 	instrumentRepository.saveAll(instruments);
 	```
-	📍 We batch save instruments for performance.
+	 We batch save(means saving in one go) instruments for performance.
 
 
-# 5. Controller Layer
+ 5. Controller Layer
 	The controller gives *two endpoints*:
 
 * *Start job* (`POST /upload/async`)
@@ -958,7 +961,7 @@ Ways to achieve:
 	}
 	```
 ---
-# 📊 How It Works in Practice
+  How It Works in Practice
 
 1. Upload a CSV via Postman.
    Response (immediate):
@@ -985,15 +988,184 @@ Ways to achieve:
    ```
 
 ============================================================================
+
 10. Auditing
     * Enable JPA Auditing (`createdBy`, `updatedBy`, timestamps)
     * Store change history in `instrument_audit` table (or Envers)
+	
+Perfect question 🙌 — let’s pause coding and break down the *concepts + important lines of code* around *Auditing in Spring Boot*.
+We’re doing *two levels of auditing*:
+
+---
+
+ 1. JPA Auditing (Created/Updated by & timestamps)
+
+ Concept
+
+* Spring Data JPA provides a built-in mechanism to automatically populate *audit fields* (`createdAt`, `updatedAt`, `createdBy`, `updatedBy`) for every entity.
+** It uses *listeners* that trigger on `INSERT` and `UPDATE`.
+* Requires us to:
+  1. Enable auditing via `@EnableJpaAuditing`.
+  2. Provide an *AuditorAware* bean (tells JPA who the current user is).
+  3. Annotate fields in entities with `@CreatedDate`, `@LastModifiedDate`, etc.
+
+---
+
+ Code Walkthrough
+
+📂 `AuditConfig.java`
+	```java
+	@Configuration
+	@EnableJpaAuditing(auditorAwareRef = "auditorAware")
+	public class AuditConfig {
+		@Bean
+		public AuditorAware<String> auditorAware() {
+			return new AuditorAwareImpl();
+		}
+	}
+	```
+* `@EnableJpaAuditing` → turns on Spring Data JPA auditing.
+* `auditorAwareRef = "auditorAware"` → tells Spring to use our custom bean to resolve the username.
+
+
+📂 `AuditorAwareImpl.java`
+	```java
+	public class AuditorAwareImpl implements AuditorAware<String> {
+		@Override
+		public Optional<String> getCurrentAuditor() {
+			// Ideally fetch from Spring Security context
+			return Optional.of("system-user");
+		}
+	}
+	```
+* Returns the current user performing the action.
+* Later, when we add security, we’ll replace `"system-user"` with the logged-in username.
+
+
+📂 `BaseEntity.java`
+	```java
+	@MappedSuperclass
+	@EntityListeners(AuditingEntityListener.class)
+	public abstract class BaseEntity {
+
+		@CreatedDate
+		@Column(updatable = false)
+		private LocalDateTime createdAt;
+
+		@LastModifiedDate
+		private LocalDateTime updatedAt;
+
+		@CreatedBy
+		@Column(updatable = false)
+		private String createdBy;
+
+		@LastModifiedBy
+		private String updatedBy;
+
+		// Getters/Setters...
+	}
+	```
+* `@MappedSuperclass` → these fields are inherited by all child entities.
+* `@EntityListeners(AuditingEntityListener.class)` → hooks into JPA lifecycle.
+* `@CreatedDate` / `@LastModifiedDate` → auto-populate timestamps.
+* `@CreatedBy` / `@LastModifiedBy` → auto-populate users from `AuditorAware`.
+
+
+📂 `Instrument.java`
+	```java
+	@Entity
+	@Table(name = "instruments")
+	public class Instrument extends BaseEntity {
+	   ...
+	}
+	```
+
+* Extends `BaseEntity` → inherits auditing fields.
+
+✅ Now, whenever you `save()` or `update()`, Spring automatically sets:
+
+* `createdAt`, `createdBy` → when record is first created.
+* `updatedAt`, `updatedBy` → when record is modified.
+
+---
+
+ 2. Hibernate Envers (Change History Tracking)
+
+ Concept
+
+* JPA auditing only tells you the *latest state* (`who created`, `who updated`, `when`).
+* If you want *full history* of every change (before & after values), you need Hibernate Envers.
+* Envers maintains special `_AUD` tables to track all revisions:
+
+  * `<entity>_AUD` → row-by-row change history.
+  * `revinfo` → revision metadata (who/when).
+
+Example:
+
+* Insert → `_AUD` row with `REVTYPE = 0`.
+* Update → new `_AUD` row with `REVTYPE = 1`.
+* Delete → new `_AUD` row with `REVTYPE = 2`.
+
+---
+
+ Code Walkthrough
+
+📂 `pom.xml`
+	```xml
+	<dependency>
+		<groupId>org.hibernate.orm</groupId>
+		<artifactId>hibernate-envers</artifactId>
+	</dependency>
+	```
+* Pulls in Hibernate Envers module.
+
+
+📂 `Instrument.java`
+	```java
+	@Entity
+	@Table(name = "instrument")
+	@Audited
+	public class Instrument extends BaseEntity {
+		...
+	}
+	```
+* `@Audited` → tells Envers to track this entity’s changes in a history table.
+
+---
+
+ How it works:
+
+1. You save a new instrument → row created in:
+
+   * `instrument` (current state).
+   * `instruments_AUD` (historical snapshot).
+2. You update the instrument → Envers inserts a *new row* in `instruments_AUD`.
+3. You delete the instrument → Envers inserts another *row* with `REVTYPE = 2`.
+
+---
+
+ ✅ Difference Between JPA Auditing & Envers
+
+| Feature      | JPA Auditing                               | Hibernate Envers                            |
+| ------------ | ------------------------------------------ | ------------------------------------------- |
+| *Purpose*  | Track who & when                           | Track full history of changes               |
+| *Fields*   | createdBy, updatedBy, createdAt, updatedAt | Complete snapshots of entity at each change |
+| *Storage*  | Same table                                 | Separate `<entity>_AUD` + `revinfo` tables  |
+| *Good for* | Metadata (latest info)                     | Audit trails, regulatory compliance         |
+
+---
+
+ 🚀 Summary
+
+* *JPA Auditing* → lightweight, adds metadata columns (`createdBy`, `updatedBy`, `timestamps`).
+* *Envers* → heavyweight, keeps *entire history* of all changes in audit tables.
+* Together, they give: *“who, when, what changed”*.
 
 
 
+----------------------------------------------------------------------------
 
-
-
+* Accesing Audit History through API
 
 
 
