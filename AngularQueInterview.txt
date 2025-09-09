@@ -1,0 +1,307 @@
+Angular Questions::
+-------------------
+
+ 🔹 *Angular Basics*1. What is Angular, and how is it different from AngularJS?*-> Angular is a TypeScript-based framework for building single-page applications, while AngularJS was JavaScript-based. Angular uses components and modules, supports dependency injection, and has better performance with Ahead-of-Time compilation. AngularJS followed MVC, while Angular follows a component-based architecture.
+
+*2. Explain Angular’s architecture.*-> Angular is built around components, modules, templates, metadata, and services. Components define the UI, templates describe the view, modules organize the app, metadata configures components, and services handle business logic. Together, they form the Angular application architecture.
+
+*3. What are Angular components, and how do you create one?*-> Components are the building blocks of Angular applications. They consist of an HTML template, TypeScript class, and CSS. We create a component using the CLI command: `ng generate component component-name`.
+
+*4. What is a module (`NgModule`)? Why do we need it?*-> An Angular module is a container for related components, services, and directives. The root module is `AppModule`, and we can have feature modules for separation of concerns. They help organize the app into logical units.
+
+*5. What are Angular directives? Difference between structural and attribute directives.*-> Directives add behavior to DOM elements. Structural directives (`*ngIf`, `*ngFor`) change the DOM structure, while attribute directives (like `ngClass`, `ngStyle`) modify the appearance or behavior of elements without changing structure.
+
+*6. What is data binding?*-> Data binding connects the component’s TypeScript class with the template. Angular supports four types: Interpolation (`{{}}`), Property binding (`[ ]`), Event binding (`( )`), and Two-way binding (`[(ngModel)]`).
+
+*7. What are pipes in Angular?*-> Pipes transform data before displaying it in the template. For example, `| date`, `| uppercase`. We can also create custom pipes like currency conversion. They are useful for formatting without changing the underlying data.
+
+*8. Difference between `ngOnInit()` and constructor.*-> The constructor is used for dependency injection and object initialization. `ngOnInit()` is a lifecycle hook that runs after Angular initializes the component and its inputs. Business logic usually goes in `ngOnInit()`.
+
+*9. Explain Angular’s component lifecycle hooks.*-> Angular components go through hooks like `ngOnInit`, `ngOnChanges`, `ngDoCheck`, `ngAfterViewInit`, and `ngOnDestroy`. They allow us to run code at specific moments of a component’s life cycle.
+
+*10. What is a template-driven form vs reactive form?*-> Template-driven forms are simple and defined mostly in the HTML template using directives like `ngModel`. Reactive forms are more powerful and defined in TypeScript using `FormControl` and `FormGroup`, making them easier to test and maintain.
+
+---
+
+ 🔹 *Angular Services & Dependency Injection*11. What are services in Angular?*-> Services in Angular contain reusable business logic and data. Instead of duplicating code in multiple components, we keep logic in a service and inject it wherever needed.
+
+*12. How does dependency injection (DI) work in Angular?*-> Angular’s DI system creates and provides services to components. When we declare a service in providers, Angular instantiates and injects it into constructors where required.
+
+*13. Difference between providing service in root vs module vs component.*-> Providing in root (`providedIn: 'root'`) makes it a singleton throughout the app. Providing in a module restricts it to that module. Providing in a component creates a new instance each time that component is loaded.
+
+*14. What are `@Injectable()` and `@Inject()` used for?*-> `@Injectable()` marks a class as a service that can be injected. `@Inject()` is used when we need to inject a dependency explicitly, for example, when using tokens or interfaces.
+
+*15. How would you create a singleton service in Angular?*-> By using `@Injectable({ providedIn: 'root' })`, the service is automatically registered at the application root and becomes a singleton across the app.
+
+---
+
+ 🔹 *Angular Routing*16. What is Angular Router?*-> Angular Router is a module that enables navigation between views in a single-page application. It maps URL paths to components and allows features like lazy loading, guards, and query parameters.
+
+*17. Difference between `routerLink` and `navigate()`.*-> `routerLink` is a directive used directly in templates for navigation. `navigate()` is a method in the Router service, used for programmatic navigation inside TypeScript code.
+
+*18. How to implement lazy loading in Angular?*-> Lazy loading means loading modules only when needed. We configure routes using `loadChildren` with dynamic imports inside the routing module. This reduces initial bundle size and improves performance.
+
+*19. What are route guards?*-> Route guards control navigation. `CanActivate` restricts access, `CanDeactivate` prevents leaving a page, `CanLoad` checks before loading a module, and `Resolve` prefetches data before route activation.
+
+*20. Difference between Hash routing and HTML5 routing.*-> Hash routing uses URLs with `/#/`, making navigation handled by the client without server configuration. HTML5 routing uses the History API, with clean URLs but requiring server-side fallback setup.
+
+---
+
+ 🔹 *Angular HTTP & API Integration*21. How do you call REST APIs in Angular using `HttpClient`?*-> We inject `HttpClient` service into a component or service, then call methods like `http.get()`, `http.post()`. It returns an Observable, which we subscribe to for response handling.
+
+*22. What is `HttpInterceptor`?*-> Interceptors are middleware for HTTP requests and responses. They are commonly used for adding JWT tokens, logging, or handling global errors in one place.
+
+*23. How to handle global error handling for API calls?*-> We can use `HttpInterceptor` with `catchError` from RxJS to handle errors centrally. This ensures consistent error messages and reduces boilerplate in components.
+
+*24. Difference between Promise and Observable in Angular?*-> Promise handles a single asynchronous event, while Observable can handle multiple values over time (streams). Observables are cancellable and support operators like `map`, `filter`.
+
+*25. How do you unsubscribe from observables to prevent memory leaks?*-> We can unsubscribe in `ngOnDestroy()` manually or use operators like `takeUntil`, or use `AsyncPipe` in templates which handles unsubscription automatically.
+
+---
+
+ 🔹 *Angular State Management*26. How do you share data between components?*-> Parent to child → `@Input()`.
+-> Child to parent → `@Output()` with EventEmitter.
+-> Sibling → shared service with a Subject/BehaviorSubject.
+
+*27. What is a BehaviorSubject vs Subject?*-> Subject emits values only when subscribed, while BehaviorSubject keeps the last emitted value and emits it immediately to new subscribers. This is useful for maintaining state.
+
+*28. What are `@Input()` and `@Output()` decorators?*-> `@Input()` is used to pass data from parent to child, while `@Output()` with EventEmitter is used to send events/data from child to parent.
+
+*29. How would you use a shared service to communicate between components?*-> We can use a service with an Observable or BehaviorSubject. Components subscribe to the service’s data stream and can send updates via methods in the service.
+
+*30. Explain Redux/NgRx. Why is it used in Angular projects?*-> NgRx is a state management library based on Redux principles. It uses actions, reducers, and selectors to manage application-wide state in a predictable and testable way. It’s useful for large-scale Angular applications.
+
+---
+
+Perfect 🚀 Let’s continue with *Q31–60 Angular answers* in the same *interview-style (3–4 lines each)* so you’ll have a full Angular Q\&A prep set.
+
+---
+
+ 🔹 *Angular Advanced Topics*
+*31. What is change detection in Angular?*
+-> Change detection is the process by which Angular checks for changes in component data and updates the DOM accordingly. It runs automatically after events, HTTP calls, or user input. By default, Angular uses the Zone.js mechanism for tracking changes.
+
+*32. Difference between Default Change Detection and OnPush strategy.*
+-> Default strategy checks the entire component tree for changes, which can be costly. OnPush checks only when input properties change or an observable emits, making it more efficient for large applications.
+
+*33. What is `ngZone` in Angular?*
+-> `ngZone` is Angular’s wrapper around Zone.js. It helps Angular detect async operations like setTimeout, promises, and HTTP calls to trigger change detection automatically.
+
+*34. How does Angular handle DOM sanitization?*
+-> Angular automatically sanitizes untrusted values in templates to prevent XSS attacks. For cases where we trust the value, we can use the `DomSanitizer` service with methods like `bypassSecurityTrustHtml`.
+
+*35. What are Angular decorators?*
+-> Decorators are functions that add metadata to classes, methods, or properties. Examples include `@Component` for components, `@Directive` for directives, `@NgModule` for modules, `@Injectable` for services, and `@Input/@Output` for data binding.
+
+*36. What are Angular lifecycle hooks beyond `ngOnInit`?*
+-> Key lifecycle hooks include `ngOnChanges`, `ngDoCheck`, `ngAfterContentInit`, `ngAfterViewInit`, and `ngOnDestroy`. Each allows developers to perform actions at specific points in a component’s lifecycle.
+
+*37. What is Angular Ivy Renderer?*
+-> Ivy is Angular’s rendering engine introduced in Angular 9. It improves performance, reduces bundle size, enables tree-shaking, and makes Angular more flexible with features like partial compilation.
+
+*38. How would you optimize performance in Angular applications?*
+-> Use OnPush change detection, trackBy in ngFor, lazy loading, code splitting, caching API responses, and optimizing image assets. Also avoid unnecessary DOM updates and subscribe/unsubscribe properly.
+
+*39. What is `trackBy` in `*ngFor`?*
+-> `trackBy` is used with `*ngFor` to optimize rendering. Instead of re-rendering the entire list when data changes, Angular only updates modified elements based on the trackBy function (like an ID).
+
+*40. How do you lazy load images/components in Angular?*
+-> We can lazy load components using Angular’s `loadChildren` in routing, and lazy load images by using the `loading="lazy"` attribute or third-party libraries like ngx-lazy-load.
+
+---
+
+ 🔹 *Angular Forms*
+*41. Difference between reactive forms and template-driven forms.*
+-> Template-driven forms are defined in the HTML and are simple but less scalable. Reactive forms are defined in TypeScript, give more control, and are better for dynamic validation and unit testing.
+
+*42. How do you add custom validation in Angular forms?*
+-> In reactive forms, we create a custom validator function and pass it to the FormControl. For template-driven forms, we can use a directive implementing `Validator`.
+
+*43. What are `FormControl`, `FormGroup`, and `FormArray`?*
+-> `FormControl` represents a single input field, `FormGroup` groups multiple controls, and `FormArray` manages an array of controls, useful for dynamic forms.
+
+*44. How to show validation error messages dynamically?*
+-> By checking form control states like `touched`, `dirty`, or `invalid`, we conditionally display error messages in the template. For example, `*ngIf="form.controls.name.errors?.required"`.
+
+*45. What is async validation in Angular forms?*
+-> Async validators are used when validation depends on an external API, like checking if a username is already taken. They return an Observable or Promise, which Angular resolves before marking the control valid/invalid.
+
+---
+
+ 🔹 *Angular Testing*
+*46. What is Karma and Jasmine?*
+-> Karma is a test runner, and Jasmine is a behavior-driven development (BDD) framework for writing unit tests. Together, they are the default testing setup in Angular CLI projects.
+
+*47. How do you write a unit test for a component in Angular?*
+-> Using TestBed, we configure the testing module, create the component fixture, and then write expectations (`expect()`) to check DOM updates and component logic.
+
+*48. What is TestBed in Angular testing?*
+-> TestBed is Angular’s primary API for writing unit tests. It configures and initializes the environment for testing components, directives, pipes, and services.
+
+*49. How do you mock HTTP calls in Angular tests?*
+-> We use the `HttpClientTestingModule` along with `HttpTestingController`. This allows us to simulate API responses without making real HTTP requests.
+
+*50. What is Protractor (or Cypress) used for in Angular apps?*
+-> Protractor was Angular’s end-to-end (E2E) testing framework but is now deprecated. Cypress and Playwright are modern alternatives for writing fast, reliable UI automation tests.
+
+---
+
+ 🔹 *Angular & UI/UX*
+*51. How do you use Angular Material in a project?*
+-> By installing Angular Material via CLI, importing modules like MatButtonModule, MatTableModule, etc., and using their ready-to-use components with consistent styling.
+
+*52. How to implement a responsive UI in Angular?*
+-> We use Angular Flex-Layout, CSS media queries, or Bootstrap/Material grid system. Responsive design ensures the app works across devices.
+
+*53. How to handle dynamic forms (fields generated at runtime)?*
+-> We can use `FormArray` in reactive forms, dynamically adding/removing controls based on user input or API response.
+
+*54. How do you implement pagination and filtering in Angular?*
+-> We can use Angular Material Table with MatPaginator and MatSort, or implement client-side filtering with pipes. For large data, server-side pagination is recommended.
+
+*55. How would you handle file upload/download in Angular?*
+-> For upload, we use `FormData` with `HttpClient.post()`. For download, we request the file as a `blob` and use JavaScript to create a downloadable link.
+
+---
+
+ 🔹 *Full Stack Integration (Java + Angular)*
+*56. How do you connect Angular frontend with Spring Boot backend?*
+-> We expose REST APIs in Spring Boot and consume them in Angular using HttpClient. We handle JSON data binding between the two, and use services for abstraction.
+
+*57. How would you handle CORS issues between Angular and Spring Boot?*
+-> By enabling CORS in Spring Boot using `@CrossOrigin` annotation or configuring `WebMvcConfigurer`. On the frontend, Angular doesn’t need changes if the backend is configured correctly.
+
+*58. How do you secure Angular routes using JWT + Spring Security?*
+-> Backend generates JWT on login, Angular stores it (in localStorage/sessionStorage). Each HTTP request includes the JWT in headers via an interceptor. Protected routes are guarded using `CanActivate`.
+
+*59. How do you pass query params and headers in Angular API calls?*
+-> We use `HttpParams` for query params and `HttpHeaders` for headers when making API calls with HttpClient. Example: `http.get(url, { params, headers })`.
+
+*60. If API response changes, how do you update Angular UI safely?*
+-> First, update the TypeScript models/interfaces. Then update the service methods and templates to handle new/optional fields, while ensuring backward compatibility using safe navigation (`?.`).
+
+============================================================================
+
+If the interviewer asks *“Which Angular version have you worked on?”* →
+
+👉 You should be *honest and specific* about the version you actually used in your projects. For example:
+
+*Safe Answer (if you used Angular 12–14 in projects):*
+
+> “I have mainly worked with Angular 12 during my project experience at Capgemini. Since Angular follows semantic versioning and most newer versions (13, 14, 15+) are backward compatible, I am confident in quickly adapting to newer versions like Angular 16 or 17. I also keep track of Angular release notes to stay updated with new features such as standalone components, strict typing, and performance improvements.”
+
+This shows:
+
+* ✅ You know your version (practical hands-on).
+* ✅ You acknowledge Angular evolves fast.
+* ✅ You’re flexible to adapt to newer versions.
+
+---
+
+# Now, is it aligned with the above 60 questions?
+
+Yes ✅.
+
+🔹 Most of the *core Angular concepts (components, services, DI, routing, forms, observables, lifecycle hooks, interceptors, etc.)* are *same across Angular 8–17*.
+🔹 Some *advanced topics (like Ivy, standalone components, Angular signals)* are more recent, but interviewers at 3 YOE usually focus on *fundamentals + practical scenarios*, which are version-independent.
+
+So, even if you say *Angular 12/13*, the *above questions remain valid* — they’re version-agnostic.
+
+---
+
+⚡ Pro tip: If they ask *“Have you worked on Angular 16/17?”*, you can say:
+
+> “I haven’t worked on Angular 16/17 in production yet, but I understand the key new features such as standalone components, improved hydration, and Angular signals. Since the fundamentals are the same, I can adapt quickly.”
+
+----------------------------------------------------------------------------
+
+*compact cheat sheet* on Angular *version differences (v10 → v17)* 
+— perfect for quick revision before interviews.
+
+---
+
+# 📌 Angular Version Differences Cheat Sheet (v10 → v17)
+
+---
+
+ *Angular 10 (June 2020)*
+
+* New *Date Range Picker* in Angular Material.
+* *Optional stricter project setup* (`--strict`) for better type safety.
+* Warnings for deprecated APIs and async validators returning `null`.
+
+---
+
+ *Angular 11 (Nov 2020)*
+
+* Faster builds with *Webpack 5 experimental support*.
+* *Component test harnesses* in Angular Material.
+* *Automatic font inlining* in builds.
+* Improved hot module replacement (HMR).
+
+---
+
+ *Angular 12 (May 2021)*
+
+* *Ivy everywhere*: View Engine officially deprecated.
+* Strict mode enabled by default for new projects.
+* *Nullish coalescing (`??`)* supported in templates.
+* Webpack 5 default support.
+
+---
+
+ *Angular 13 (Nov 2021)*
+
+* Removed *View Engine completely* (Ivy only).
+* No more Angular Package Format (APF) with View Engine.
+* Angular now supports *TypeScript 4.4+*.
+* *Persisted build cache* for faster rebuilds.
+
+---
+
+ *Angular 14 (Jun 2022)*
+
+* *Standalone components* introduced (no need for `NgModule`).
+* Stronger *Typed Forms* with strict type checking.
+* *Angular DevTools support* for debugging standalone APIs.
+* Extended diagnostics in templates.
+
+---
+
+ *Angular 15 (Nov 2022)*
+
+* *Standalone APIs stable* (can build apps without NgModules).
+* *Functional router guards/resolvers* (`inject()` instead of classes).
+* *Directive composition API* to extend directives.
+* Better support for *ESBuild* + optimized builds.
+
+---
+
+ *Angular 16 (May 2023)*
+
+* *Angular Signals* (reactive state management, alternative to RxJS).
+* *Hydration support* for server-side rendering (SSR).
+* *Required inputs* (`@Input({ required: true })`).
+* Non-destructive hydration → preserves server-rendered HTML.
+
+---
+
+ *Angular 17 (Nov 2023)*
+
+* *Brand new control flow syntax* (`@if`, `@for`, `@switch`) → replacing `*ngIf`, `*ngFor`.
+* *Built-in deferrable views* (`@defer`) for lazy loading parts of UI.
+* Major performance improvements in change detection & build tools.
+* Updated CLI with faster compilation and Vite-based builds (experimental).
+
+---
+
+# 🎯 Quick Way to Answer in Interview
+
+If asked *“Which version did you use?”* (say Angular 12–14 in your case):
+
+👉 *Example Answer:*
+
+> “I worked mainly with Angular 12 in my projects. I’m also aware of newer features in Angular 14+ like standalone components, Angular 16 signals, and Angular 17’s new control flow syntax. Since most fundamentals remain the same, I can quickly adapt to newer versions.”
+
+
+

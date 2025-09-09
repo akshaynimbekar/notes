@@ -32,7 +32,7 @@ Core Java Interview Questions & Answers (1–50)
 
 ---
 
- 5. Difference between `abstract` class and `interface`.
+ 5. Difference between 'abstract class' and `interface`.
 
 * Abstract class can have both abstract (unimplemented) and concrete methods.
 * Interface (Java 8+) can have abstract, default, and static methods but no instance fields.
@@ -210,7 +210,7 @@ Core Java Interview Questions & Answers (1–50)
 
  27. Difference between shallow copy and deep copy.
 
-* Shallow copy: Copies object but references same nested objects.
+* Shallow copy: Copies object but, references same nested objects.
 * Deep copy: Copies object and creates new copies of nested objects.
 * Example: `clone()` by default gives shallow copy.
 
@@ -402,7 +402,7 @@ Major Features:
 1. Lambda Expressions → inline functions for functional programming
 2. Functional Interfaces (`@FunctionalInterface`, `Predicate`, `Consumer`, `Supplier`)
 3. Streams API → process collections in a declarative style
-4. Optional<T> → avoid `NullPointerException`
+4. Optional<T> → avoid `NullPointerException`, container class
 5. Default and Static Methods in Interfaces
 6. New Date & Time API (`java.time`) → better replacement for `Date`
 7. Nashorn JavaScript Engine (later removed in Java 15)
