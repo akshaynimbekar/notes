@@ -1074,7 +1074,7 @@ We’re doing *two levels of auditing*:
 📂 `Instrument.java`
 	```java
 	@Entity
-	@Table(name = "instruments")
+	@Table(name = "instrument")
 	public class Instrument extends BaseEntity {
 	   ...
 	}
@@ -1083,7 +1083,6 @@ We’re doing *two levels of auditing*:
 * Extends `BaseEntity` → inherits auditing fields.
 
 ✅ Now, whenever you `save()` or `update()`, Spring automatically sets:
-
 * `createdAt`, `createdBy` → when record is first created.
 * `updatedAt`, `updatedBy` → when record is modified.
 
@@ -1101,7 +1100,6 @@ We’re doing *two levels of auditing*:
   * `revinfo` → revision metadata (who/when).
 
 Example:
-
 * Insert → `_AUD` row with `REVTYPE = 0`.
 * Update → new `_AUD` row with `REVTYPE = 1`.
 * Delete → new `_AUD` row with `REVTYPE = 2`.
@@ -1136,7 +1134,6 @@ Example:
  How it works:
 
 1. You save a new instrument → row created in:
-
    * `instrument` (current state).
    * `instruments_AUD` (historical snapshot).
 2. You update the instrument → Envers inserts a *new row* in `instruments_AUD`.

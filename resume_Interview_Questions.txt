@@ -530,7 +530,7 @@ Spring & Spring Boot Interview Questions & Answers (51–90)
 
  55. What is Spring Boot auto-configuration?
 
-* It automatically configures beans based on the classpath and existing beans.
+* It automatically configures beans based on the *classpath and existing beans*.
 * Example: If `spring-boot-starter-data-jpa` is added, it auto-configures DataSource, EntityManager, etc.
 * Can be customized using `@EnableAutoConfiguration` or excluded if needed.
 
@@ -540,7 +540,7 @@ Spring & Spring Boot Interview Questions & Answers (51–90)
 
 * `@Component`: Generic stereotype for any bean.
 * `@Service`: Specialized for business logic layer.
-* `@Repository`: Specialized for persistence layer, adds exception translation for DB errors.
+* `@Repository`: Specialized for persistence layer, *adds exception translation for DB errors*.
 
 ---
 
@@ -1757,7 +1757,7 @@ REST APIs & Web Interview Questions & Answers (116–135)
   2. How does the company support career growth and learning opportunities?
   3. What qualities do you value most in your engineering team members?
 
----
+============================================================================
 
 list of coding/hands-on questions (grouped by area) that you may be asked:
 
@@ -2300,8 +2300,2020 @@ public String uploadCSV(@RequestParam("file") MultipartFile file) throws Excepti
     return "File uploaded successfully";
 }
 ```
+----------------------------------------------------------------------------
+
+Solutions of coding questions::
 
 ---
+
+ *1. LRU Cache using `LinkedHashMap`*
+
+```java
+import java.util.*;
+
+class LRUCache<K, V> extends LinkedHashMap<K, V> {
+    private final int capacity;
+
+    public LRUCache(int capacity) {
+        super(capacity, 0.75f, true); // accessOrder = true
+        this.capacity = capacity;
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+        return size() > capacity;
+    }
+    
+    public static void main(String[] args) {
+        LRUCache<Integer, String> cache = new LRUCache<>(3);
+        cache.put(1, "A");
+        cache.put(2, "B");
+        cache.put(3, "C");
+        cache.get(1);
+        cache.put(4, "D"); // removes 2 (least recently used)
+        System.out.println(cache);
+    }
+}
+```
+
+---
+
+ *2. Thread-safe Singleton*
+
+```java
+class Singleton {
+    private static volatile Singleton instance;
+    private Singleton() {} // private constructor
+
+    public static Singleton getInstance() {
+        if (instance == null) {
+            synchronized (Singleton.class) { // double-checked locking
+                if (instance == null) {
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}
+```
+
+---
+
+ *3. Palindrome ignoring special characters*
+
+```java
+class PalindromeCheck {
+    public static boolean isPalindrome(String s) {
+        s = s.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+        int left = 0, right = s.length() - 1;
+        while (left < right) {
+            if (s.charAt(left++) != s.charAt(right--)) return false;
+        }
+        return true;
+    }
+    
+    public static void main(String[] args) {
+        System.out.println(isPalindrome("A man, a plan, a canal: Panama")); // true
+    }
+}
+```
+
+---
+
+ *4. Find duplicate elements in a list*
+
+```java
+import java.util.*;
+
+class FindDuplicates {
+    public static void main(String[] args) {
+        List<Integer> list = Arrays.asList(1, 2, 3, 4, 2, 5, 1);
+        Set<Integer> seen = new HashSet<>();
+        Set<Integer> duplicates = new HashSet<>();
+        
+        for (int num : list) {
+            if (!seen.add(num)) {
+                duplicates.add(num);
+            }
+        }
+        System.out.println("Duplicates: " + duplicates);
+    }
+}
+```
+
+---
+
+ *5. Sort employees by salary, then name*
+
+```java
+import java.util.*;
+
+class Employee {
+    String name;
+    int salary;
+    Employee(String name, int salary) {
+        this.name = name; this.salary = salary;
+    }
+    public String toString() {
+        return name + " - " + salary;
+    }
+}
+
+class SortEmployees {
+    public static void main(String[] args) {
+        List<Employee> employees = Arrays.asList(
+            new Employee("Akshay", 5000),
+            new Employee("Ravi", 7000),
+            new Employee("Ajay", 5000)
+        );
+
+        employees.sort(Comparator.comparingInt((Employee e) -> e.salary)
+                .thenComparing(e -> e.name));
+        
+        employees.forEach(System.out::println);
+    }
+}
+```
+
+---
+
+ *6. Producer-Consumer with `wait()` and `notify()`*
+
+```java
+import java.util.*;
+
+class SharedBuffer {
+    private final Queue<Integer> queue = new LinkedList<>();
+    private final int CAPACITY = 5;
+
+    public synchronized void produce(int value) throws InterruptedException {
+        while (queue.size() == CAPACITY) wait();
+        queue.add(value);
+        System.out.println("Produced: " + value);
+        notifyAll();
+    }
+
+    public synchronized int consume() throws InterruptedException {
+        while (queue.isEmpty()) wait();
+        int val = queue.poll();
+        System.out.println("Consumed: " + val);
+        notifyAll();
+        return val;
+    }
+}
+
+class ProducerConsumer {
+    public static void main(String[] args) {
+        SharedBuffer buffer = new SharedBuffer();
+        
+        Thread producer = new Thread(() -> {
+            for (int i = 1; i <= 10; i++) {
+                try { buffer.produce(i); Thread.sleep(100); } 
+                catch (InterruptedException e) {}
+            }
+        });
+        
+        Thread consumer = new Thread(() -> {
+            for (int i = 1; i <= 10; i++) {
+                try { buffer.consume(); Thread.sleep(200); } 
+                catch (InterruptedException e) {}
+            }
+        });
+        
+        producer.start();
+        consumer.start();
+    }
+}
+```
+
+---
+
+ *7. Word frequency counter*
+
+```java
+import java.util.*;
+
+class WordFrequency {
+    public static void main(String[] args) {
+        String paragraph = "Java is great and Java is powerful";
+        Map<String, Integer> freq = new HashMap<>();
+        
+        for (String word : paragraph.toLowerCase().split("\\s+")) {
+            freq.put(word, freq.getOrDefault(word, 0) + 1);
+        }
+        
+        freq.forEach((k, v) -> System.out.println(k + " -> " + v));
+    }
+}
+```
+
+---
+
+ *8. Custom exception handling*
+
+```java
+class InvalidAgeException extends Exception {
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
+
+class CustomExceptionExample {
+    public static void validateAge(int age) throws InvalidAgeException {
+        if (age < 18) throw new InvalidAgeException("Age must be 18 or above");
+        System.out.println("Valid age: " + age);
+    }
+    
+    public static void main(String[] args) {
+        try {
+            validateAge(15);
+        } catch (InvalidAgeException e) {
+            System.out.println("Exception caught: " + e.getMessage());
+        }
+    }
+}
+```
+
+---
+
+ *9. First non-repeating character*
+
+```java
+import java.util.*;
+
+class FirstNonRepeating {
+    public static Character findFirst(String s) {
+        Map<Character, Integer> count = new LinkedHashMap<>();
+        for (char c : s.toCharArray()) count.put(c, count.getOrDefault(c, 0) + 1);
+        for (Map.Entry<Character, Integer> entry : count.entrySet()) {
+            if (entry.getValue() == 1) return entry.getKey();
+        }
+        return null;
+    }
+    
+    public static void main(String[] args) {
+        System.out.println(findFirst("swiss")); // w
+    }
+}
+```
+
+---
+
+ *10. CompletableFuture for async tasks*
+
+```java
+import java.util.concurrent.*;
+
+class AsyncExample {
+    public static void main(String[] args) throws Exception {
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+            try { Thread.sleep(1000); } catch (InterruptedException e) {}
+            return "Hello from async task!";
+        });
+        
+        future.thenAccept(result -> System.out.println("Result: " + result));
+        System.out.println("Main thread continues...");
+        future.get(); // wait for completion
+    }
+}
+```
+
+-------------------------------------------------
+
+Perfect 🚀 Let’s cover your *Data Structures & Algorithms (Java-specific)* questions *11–20* with *optimal, interview-friendly solutions*.
+
+---
+
+ *11. Reverse a linked list (iterative & recursive)*
+
+```java
+class ListNode {
+    int val; ListNode next;
+    ListNode(int val) { this.val = val; }
+}
+
+class ReverseLinkedList {
+    // Iterative
+    public static ListNode reverseIterative(ListNode head) {
+        ListNode prev = null, curr = head;
+        while (curr != null) {
+            ListNode next = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = next;
+        }
+        return prev;
+    }
+
+    // Recursive
+    public static ListNode reverseRecursive(ListNode head) {
+        if (head == null || head.next == null) return head;
+        ListNode newHead = reverseRecursive(head.next);
+        head.next.next = head;
+        head.next = null;
+        return newHead;
+    }
+}
+```
+
+---
+
+ *12. Find the middle element of a linked list*
+
+```java
+class MiddleLinkedList {
+    public static ListNode findMiddle(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return slow; // slow is the middle
+    }
+}
+```
+
+---
+
+ *13. Detect cycle in a linked list (Floyd’s algorithm)*
+
+```java
+class DetectCycle {
+    public static boolean hasCycle(ListNode head) {
+        ListNode slow = head, fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+            if (slow == fast) return true;
+        }
+        return false;
+    }
+}
+```
+
+---
+
+ *14. Merge two sorted arrays without extra space*
+
+```java
+import java.util.*;
+
+class MergeSortedArrays {
+    public static void merge(int[] arr1, int[] arr2) {
+        int n = arr1.length, m = arr2.length;
+        int i = n - 1, j = 0;
+        while (i >= 0 && j < m) {
+            if (arr1[i] > arr2[j]) {
+                int temp = arr1[i];
+                arr1[i] = arr2[j];
+                arr2[j] = temp;
+            }
+            i--; j++;
+        }
+        Arrays.sort(arr1);
+        Arrays.sort(arr2);
+    }
+}
+```
+
+---
+
+ *15. Longest substring without repeating characters*
+
+```java
+import java.util.*;
+
+class LongestSubstring {
+    public static int lengthOfLongestSubstring(String s) {
+        Set<Character> set = new HashSet<>();
+        int left = 0, max = 0;
+        
+        for (int right = 0; right < s.length(); right++) {
+            while (set.contains(s.charAt(right))) {
+                set.remove(s.charAt(left++));
+            }
+            set.add(s.charAt(right));
+            max = Math.max(max, right - left + 1);
+        }
+        return max;
+    }
+}
+```
+
+---
+
+ *16. Binary Search + Time Complexity*
+
+```java
+class BinarySearch {
+    public static int binarySearch(int[] arr, int target) {
+        int low = 0, high = arr.length - 1;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (arr[mid] == target) return mid;
+            if (arr[mid] < target) low = mid + 1;
+            else high = mid - 1;
+        }
+        return -1;
+    }
+    // Time Complexity: O(log n)
+}
+```
+
+---
+
+ *17. Min-Heap / Max-Heap using PriorityQueue*
+
+```java
+import java.util.*;
+
+class HeapExample {
+    public static void main(String[] args) {
+        // Min-Heap
+        PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+        minHeap.add(10); minHeap.add(5); minHeap.add(20);
+        System.out.println("Min-Heap: " + minHeap.poll()); // 5
+
+        // Max-Heap
+        PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Comparator.reverseOrder());
+        maxHeap.add(10); maxHeap.add(5); maxHeap.add(20);
+        System.out.println("Max-Heap: " + maxHeap.poll()); // 20
+    }
+}
+```
+
+---
+
+ *18. Find min in rotated sorted array*
+
+```java
+class RotatedArrayMin {
+    public static int findMin(int[] nums) {
+        int low = 0, high = nums.length - 1;
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            if (nums[mid] > nums[high]) low = mid + 1;
+            else high = mid;
+        }
+        return nums[low];
+    }
+}
+```
+
+---
+
+ *19. Check if two strings are anagrams*
+
+```java
+import java.util.*;
+
+class AnagramCheck {
+    public static boolean isAnagram(String s1, String s2) {
+        if (s1.length() != s2.length()) return false;
+        char[] a = s1.toCharArray(), b = s2.toCharArray();
+        Arrays.sort(a); Arrays.sort(b);
+        return Arrays.equals(a, b);
+    }
+}
+```
+
+---
+
+ *20. Two-sum problem using HashMap*
+
+```java
+import java.util.*;
+
+class TwoSum {
+    public static int[] twoSum(int[] nums, int target) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            if (map.containsKey(complement)) {
+                return new int[]{map.get(complement), i};
+            }
+            map.put(nums[i], i);
+        }
+        return new int[]{-1, -1};
+    }
+}
+```
+
+-------------------------------------------------
+
+Nice 🚀 Let’s tackle the *SQL & Database questions (21–30)* with *optimal interview-ready answers*.
+I’ll assume a table `Employee(id, name, salary, email, dept_id, manager_id, join_date)` and a `Project(emp_id, project_id)` for relevant queries.
+
+---
+
+ *21. Find second highest salary*
+
+```sql
+SELECT MAX(salary) AS SecondHighestSalary
+FROM Employee
+WHERE salary < (SELECT MAX(salary) FROM Employee);
+```
+
+🔹 Alternative using `LIMIT/OFFSET` (MySQL, PostgreSQL):
+
+```sql
+SELECT DISTINCT salary 
+FROM Employee
+ORDER BY salary DESC
+LIMIT 1 OFFSET 1;
+```
+
+---
+
+ *22. Find employees with duplicate emails*
+
+```sql
+SELECT email, COUNT(*) 
+FROM Employee
+GROUP BY email
+HAVING COUNT(*) > 1;
+```
+
+---
+
+ *23. Find Nth highest salary*
+
+```sql
+-- Using ROW_NUMBER
+SELECT salary 
+FROM (
+    SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk
+    FROM Employee
+) t
+WHERE rnk = N;
+```
+
+👉 Replace *N* with required rank.
+
+---
+
+ *24. Pivot employee count by department*
+
+```sql
+-- Example: count employees per department (MySQL 8 / Postgres)
+SELECT dept_id,
+       SUM(CASE WHEN salary BETWEEN 0 AND 5000 THEN 1 ELSE 0 END) AS low_salary,
+       SUM(CASE WHEN salary BETWEEN 5001 AND 10000 THEN 1 ELSE 0 END) AS mid_salary,
+       SUM(CASE WHEN salary > 10000 THEN 1 ELSE 0 END) AS high_salary
+FROM Employee
+GROUP BY dept_id;
+```
+
+*(Pivot support is native in SQL Server via `PIVOT` keyword.)*
+
+---
+
+ *25. Joins Examples*
+
+```sql
+-- INNER JOIN: employees with departments
+SELECT e.id, e.name, d.dept_name
+FROM Employee e
+INNER JOIN Department d ON e.dept_id = d.id;
+
+-- LEFT JOIN: all employees + department info (if exists)
+SELECT e.id, e.name, d.dept_name
+FROM Employee e
+LEFT JOIN Department d ON e.dept_id = d.id;
+
+-- RIGHT JOIN: all departments + employees (if exists)
+SELECT e.id, e.name, d.dept_name
+FROM Employee e
+RIGHT JOIN Department d ON e.dept_id = d.id;
+
+-- FULL JOIN: employees & departments, even if no match (Postgres/SQL Server)
+SELECT e.id, e.name, d.dept_name
+FROM Employee e
+FULL OUTER JOIN Department d ON e.dept_id = d.id;
+```
+
+---
+
+ *26. Employees who joined in last 30 days*
+
+```sql
+SELECT * 
+FROM Employee
+WHERE join_date >= CURRENT_DATE - INTERVAL '30 days';
+```
+
+---
+
+ *27. Window Functions (RANK, ROW\_NUMBER)*
+
+```sql
+-- Rank employees by salary within departments
+SELECT name, dept_id, salary,
+       RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS salary_rank,
+       ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS row_num
+FROM Employee;
+```
+
+---
+
+ *28. Employees who don’t have managers*
+
+```sql
+SELECT * 
+FROM Employee
+WHERE manager_id IS NULL;
+```
+
+---
+
+ *29. Update multiple records using CASE WHEN*
+
+```sql
+UPDATE Employee
+SET salary = CASE
+    WHEN dept_id = 1 THEN salary * 1.1
+    WHEN dept_id = 2 THEN salary * 1.2
+    ELSE salary
+END;
+```
+
+---
+
+ *30. Employees working in more than one project*
+
+```sql
+SELECT emp_id 
+FROM Project
+GROUP BY emp_id
+HAVING COUNT(DISTINCT project_id) > 1;
+```
+
+-------------------------------------------------
+
+Great — here are *concise, production-ready code snippets and explanations* for *Spring & Spring Boot hands-on tasks (31–40)*. Each item shows the minimal, clear implementation you can paste into a Spring Boot project and extend. I’ll keep each example self-contained and focused on the common interview expectations.
+
+---
+
+ 31. REST API in Spring Boot for CRUD on `Employee`
+
+*Entity*
+
+```java
+// Employee.java
+package com.example.demo.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "employees")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Employee {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String email;
+    private Double salary;
+}
+```
+
+*Repository*
+
+```java
+// EmployeeRepository.java
+package com.example.demo.repository;
+
+import com.example.demo.model.Employee;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EmployeeRepository extends JpaRepository<Employee, Long> {}
+```
+
+*Service*
+
+```java
+// EmployeeService.java
+package com.example.demo.service;
+
+import com.example.demo.model.Employee;
+import com.example.demo.repository.EmployeeRepository;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class EmployeeService {
+    private final EmployeeRepository repo;
+    public EmployeeService(EmployeeRepository repo) { this.repo = repo; }
+
+    public List<Employee> findAll() { return repo.findAll(); }
+    public Employee findById(Long id) { return repo.findById(id).orElseThrow(); }
+    public Employee save(Employee e) { return repo.save(e); }
+    public Employee update(Long id, Employee e) {
+        e.setId(id);
+        return repo.save(e);
+    }
+    public void delete(Long id) { repo.deleteById(id); }
+}
+```
+
+*Controller*
+
+```java
+// EmployeeController.java
+package com.example.demo.controller;
+
+import com.example.demo.model.Employee;
+import com.example.demo.service.EmployeeService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/employees")
+public class EmployeeController {
+    private final EmployeeService svc;
+    public EmployeeController(EmployeeService svc) { this.svc = svc; }
+
+    @GetMapping
+    public List<Employee> getAll() { return svc.findAll(); }
+
+    @GetMapping("/{id}")
+    public Employee getById(@PathVariable Long id) { return svc.findById(id); }
+
+    @PostMapping
+    public Employee create(@RequestBody Employee e) { return svc.save(e); }
+
+    @PutMapping("/{id}")
+    public Employee update(@PathVariable Long id, @RequestBody Employee e) { return svc.update(id, e); }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        svc.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+```
+
+---
+
+ 32. Global exception handling using `@ControllerAdvice`
+
+```java
+// GlobalExceptionHandler.java
+package com.example.demo.exception;
+
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleRuntime(RuntimeException ex, WebRequest req) {
+        ApiError err = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        return new ResponseEntity<>(err, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({ IllegalArgumentException.class })
+    public ResponseEntity<Object> handleBadRequest(Exception ex, WebRequest req) {
+        ApiError err = new ApiError(HttpStatus.BAD_REQUEST, ex.getMessage());
+        return new ResponseEntity<>(err, HttpStatus.BAD_REQUEST);
+    }
+
+    // Simple DTO
+    static class ApiError {
+        public int status;
+        public String error;
+        public ApiError(HttpStatus s, String msg) {
+            this.status = s.value();
+            this.error = msg;
+        }
+    }
+}
+```
+
+---
+
+ 33. Spring Boot logging using Lombok `@Slf4j`
+
+```java
+// ExampleService.java
+package com.example.demo.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+public class ExampleService {
+    public void process() {
+        log.info("Process started");
+        try {
+            // business logic
+            log.debug("Processing ...");
+        } catch (Exception e) {
+            log.error("Error in process", e);
+        }
+        log.info("Process finished");
+    }
+}
+```
+
+* Ensure `spring-boot-starter-logging` is on the classpath (default). Use `application.properties` to change log level:
+
+```properties
+logging.level.com.example.demo=DEBUG
+```
+
+---
+
+ 34. Use Spring Profiles (dev, test, prod)
+
+*application.properties (common)*
+
+```properties
+spring.application.name=demo-app
+```
+
+*application-dev.properties*
+
+```properties
+app.mode=dev
+logging.level.root=DEBUG
+```
+
+*application-prod.properties*
+
+```properties
+app.mode=prod
+logging.level.root=INFO
+```
+
+*Profile-based bean*
+
+```java
+// DataSourceConfig.java
+package com.example.demo.config;
+
+import org.springframework.context.annotation.*;
+import javax.sql.DataSource;
+
+@Configuration
+public class DataSourceConfig {
+    @Bean
+    @Profile("dev")
+    public String devBean() { return "dev-bean"; }
+
+    @Bean
+    @Profile("prod")
+    public String prodBean() { return "prod-bean"; }
+}
+```
+
+* Run with `--spring.profiles.active=dev` or set environment variable.
+
+---
+
+ 35. DTO + ModelMapper for REST API responses
+
+*DTO*
+
+```java
+// EmployeeDto.java
+package com.example.demo.dto;
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class EmployeeDto {
+    private Long id;
+    private String name;
+    private String email;
+    // hide salary in some responses if needed
+}
+```
+
+*ModelMapper bean*
+
+```java
+// AppConfig.java
+package com.example.demo.config;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.*;
+
+@Configuration
+public class AppConfig {
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
+}
+```
+
+*Controller mapping example*
+
+```java
+// EmployeeController (snippet)
+import com.example.demo.dto.EmployeeDto;
+import org.modelmapper.ModelMapper;
+
+private final ModelMapper mapper;
+
+public EmployeeController(EmployeeService svc, ModelMapper mapper) {
+    this.svc = svc; this.mapper = mapper;
+}
+
+@GetMapping("/{id}")
+public EmployeeDto getById(@PathVariable Long id) {
+    Employee e = svc.findById(id);
+    return mapper.map(e, EmployeeDto.class);
+}
+```
+
+* Alternatively use MapStruct for compile-time mapping.
+
+---
+
+ 36. Upload & download CSV endpoint
+
+*Upload (multipart)*
+
+```java
+// CsvController.java (upload)
+@PostMapping("/upload")
+public ResponseEntity<String> uploadCsv(@RequestParam("file") MultipartFile file) {
+    if (file.isEmpty()) return ResponseEntity.badRequest().body("Empty file");
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] cols = line.split(",");
+            // parse and save to DB
+        }
+        return ResponseEntity.ok("Uploaded");
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+    }
+}
+```
+
+*Download*
+
+```java
+@GetMapping("/download")
+public void downloadCsv(HttpServletResponse response) throws IOException {
+    response.setContentType("text/csv");
+    response.setHeader("Content-Disposition", "attachment; filename=\"employees.csv\"");
+    try (PrintWriter writer = response.getWriter()) {
+        writer.println("id,name,email,salary");
+        // fetch from DB and print rows
+        writer.println("1,Akshay,akshay@example.com,5000");
+    }
+}
+```
+
+---
+
+ 37. Pagination & sorting in Spring Data JPA
+
+*Repository usage*
+
+```java
+@GetMapping("/paged")
+public Page<Employee> getPaged(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id,asc") String[] sort) {
+
+    Sort.Direction dir = Sort.Direction.fromString(sort[1]);
+    PageRequest pr = PageRequest.of(page, size, Sort.by(dir, sort[0]));
+    return employeeRepo.findAll(pr);
+}
+```
+
+* `Page<Employee>` gives metadata (`getTotalPages()`, `getTotalElements()`).
+
+---
+
+ 38. Spring Boot Scheduler that runs every 10 seconds
+
+```java
+import org.springframework.scheduling.annotation.*;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ScheduledTasks {
+
+    @Scheduled(fixedRate = 10000) // every 10 seconds
+    public void periodicTask() {
+        System.out.println("Task executed: " + System.currentTimeMillis());
+    }
+}
+```
+
+* Enable scheduling in main app: `@EnableScheduling` on the Spring Boot application class.
+
+---
+
+ 39. REST API secured with JWT (minimal example)
+
+*JwtUtil*
+
+```java
+// JwtUtil.java (very minimal)
+import io.jsonwebtoken.*;
+import java.util.Date;
+
+@Component
+public class JwtUtil {
+    private final String secret = "verySecretKey"; // use secure config
+    public String generateToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 3600_000))
+                .signWith(SignatureAlgorithm.HS256, secret)
+                .compact();
+    }
+    public String extractUsername(String token) {
+        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().getSubject();
+    }
+}
+```
+
+*Filter*
+
+```java
+// JwtFilter.java
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+public class JwtFilter extends OncePerRequestFilter {
+    private final JwtUtil jwtUtil;
+    public JwtFilter(JwtUtil jwtUtil) { this.jwtUtil = jwtUtil; }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+
+        String auth = req.getHeader("Authorization");
+        if (auth != null && auth.startsWith("Bearer ")) {
+            String token = auth.substring(7);
+            String user = jwtUtil.extractUsername(token);
+            // set Authentication into SecurityContext if valid (omitted for brevity)
+        }
+        chain.doFilter(req, res);
+    }
+}
+```
+
+*Security config (Spring Security 5/6 minimal)*
+
+```java
+// SecurityConfig.java (very simplified)
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
+        http.csrf().disable()
+            .authorizeHttpRequests()
+            .requestMatchers("/auth/*").permitAll()
+            .anyRequest().authenticated()
+            .and()
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        return http.build();
+    }
+}
+```
+
+*Auth controller*
+
+```java
+@PostMapping("/auth/login")
+public ResponseEntity<?> login(@RequestBody AuthRequest req) {
+    // validate credentials, on success:
+    String token = jwtUtil.generateToken(req.getUsername());
+    return ResponseEntity.ok(Map.of("token", token));
+}
+```
+
+* Notes: This is a minimal demo. In production, use a robust auth manager, hashing, token validation, refresh tokens, and secure secret storage.
+
+---
+
+ 40. Expose a Spring Boot API and test with Postman
+
+*Steps (concise):*
+
+1. Run the Spring Boot app (`mvn spring-boot:run` or via IDE).
+2. Confirm the endpoint: `GET http://localhost:8080/api/employees`.
+3. Open Postman → create a new request → choose method (GET/POST).
+4. For POST, set `Content-Type: application/json` and body like:
+
+```json
+{ "name": "Akshay", "email":"akshay@example.com", "salary": 5000 }
+```
+
+5. Send request → inspect response code, body, headers.
+6. For protected endpoints (JWT): first call `/auth/login` → copy token → in Postman add Header `Authorization: Bearer <token>` → call protected endpoints.
+
+---
+
+ Final tips for interviews
+
+* For file upload/download, mention chunking and streaming for large files.
+* For JWT, stress secure secret storage and token expiry/refresh tokens.
+* For pagination, prefer server-side pagination for large datasets.
+* For DTO mapping, call out privacy concerns (don’t expose sensitive fields).
+
+---
+
+If you want, I can:
+
+* provide a *complete sample project* (zip) with these endpoints wired together, or
+* generate *Postman collection* (export) for the endpoints above, or
+* give *unit/integration tests* (JUnit + MockMvc) for the controller endpoints.
+
+-------------------------------------------------
+
+Great — below are concise, practical, interview-ready solutions and patterns for *Microservices & Cloud (41–50)* tailored to your background (Java, Spring Boot, AWS, Docker, Kubernetes, Kafka, CI/CD). Each item includes architecture notes and copy-paste-ready code/config snippets you can explain or extend in an interview.
+
+---
+
+ 41 — Design: Instrument Reference Data Service (high level)
+
+*Goal:* Manage instrument static data (ISIN, ticker, exchange) with CRUD, bulk ingestion, audit, and event publish.
+
+*High-level components*
+
+* *instrument-service (Spring Boot + Spring Data JPA)* — CRUD REST API, validation, DTOs, audit fields.
+* *ingestion-service* or ingestion endpoint in same service — CSV bulk upload, parse, validate, store (batch).
+* *DB* — PostgreSQL (RDS) with instrument table + audit table.
+* *Event streaming* — Kafka topic `instrument.updated` for downstream consumers.
+* *API Gateway* — single entry, auth (JWT).
+* *Config* — Spring Cloud Config (externalized).
+* *CI/CD* — GitHub Actions → build → Docker → push to ECR → deploy to EKS (Helm).
+* *Observability* — Prometheus + Grafana + ELK; Health via Actuator.
+* *Security* — Spring Security + OAuth/JWT, RBAC.
+
+*Key APIs*
+
+```
+GET /api/instruments                      -> list (filter, paging)
+GET /api/instruments/{id}                 -> get by id
+POST /api/instruments                     -> create
+PUT /api/instruments/{id}                 -> update + publish event
+POST /api/instruments/bulk-upload (CSV)   -> validate, store in batch, publish events (or single aggregated event)
+```
+
+*DB schema (simplified)*
+
+```sql
+CREATE TABLE instrument (
+  id BIGSERIAL PRIMARY KEY,
+  isin VARCHAR(12) UNIQUE,
+  ticker VARCHAR(20),
+  exchange VARCHAR(50),
+  metadata JSONB,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP,
+  version BIGINT
+);
+```
+
+*Event contract (example)*
+
+```json
+{
+  "eventType":"instrument.updated",
+  "instrumentId":123,
+  "timestamp":"2025-09-11T12:00:00Z",
+  "payload": { "isin":"US1234567890","ticker":"ABC","exchange":"NYSE" }
+}
+```
+
+---
+
+ 42 — Dockerfile for a Spring Boot app (multi-stage, small image)
+
+```dockerfile
+ build stage
+FROM maven:3.9.0-eclipse-temurin-17 AS build
+WORKDIR /workspace
+COPY pom.xml .
+COPY src ./src
+RUN mvn -B -DskipTests package
+
+ runtime stage
+FROM eclipse-temurin:17-jre-jammy
+ARG JAR=target/*.jar
+COPY --from=build /workspace/${JAR} /app/app.jar
+EXPOSE 8080
+ENTRYPOINT ["java","-XX:+UseContainerSupport","-Xms256m","-Xmx512m","-jar","/app/app.jar"]
+```
+
+* Use multi-stage to keep final image small. Use JRE base for production.
+
+---
+
+ 43 — Kubernetes YAML (Deployment + Service) — 2 replicas + probes
+
+```yaml
+ deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: instrument-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: instrument-service
+  template:
+    metadata:
+      labels:
+        app: instrument-service
+    spec:
+      containers:
+        - name: instrument
+          image: <aws_account>.dkr.ecr.<region>.amazonaws.com/instrument-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: rds-secret
+                  key: datasource-url
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+ service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: instrument-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: instrument-service
+```
+
+* Use `readiness` and `liveness` actuator endpoints. Secrets stored in k8s Secrets.
+
+---
+
+ 44 — Use AWS RDS with Spring Boot (approach + properties)
+
+*Approach*
+
+* Provision PostgreSQL RDS instance (multi-AZ, backups).
+* Use IAM DB auth or store credentials in AWS Secrets Manager (preferred) and mount secrets to k8s or load via Parameter Store.
+* Use HikariCP for pooling.
+
+*application-prod.properties*
+
+```properties
+spring.datasource.url=jdbc:postgresql://<rds-endpoint>:5432/instruments
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+spring.datasource.hikari.maximum-pool-size=20
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=validate
+```
+
+*k8s secret mapping* or use `AWS Secrets Manager` + external-secrets operator to inject env vars.
+
+---
+
+ 45 — Health checks in microservice
+
+*Spring Boot Actuator*
+
+* Add dependency: `spring-boot-starter-actuator`.
+* Enable endpoints in `application.properties`:
+
+```properties
+management.endpoints.web.exposure.include=health,info,metrics,prometheus
+management.endpoint.health.probes.enabled=true
+```
+
+* Implement custom `HealthIndicator`:
+
+```java
+@Component
+public class DbHealthIndicator implements HealthIndicator {
+    private final DataSource ds;
+    public DbHealthIndicator(DataSource ds) { this.ds = ds; }
+    @Override
+    public Health health() {
+        try (Connection c = ds.getConnection()) {
+            return Health.up().withDetail("db","reachable").build();
+        } catch (SQLException e) {
+            return Health.down(e).build();
+        }
+    }
+}
+```
+
+*Kubernetes*
+
+* Wire actuator `/actuator/health/liveness` and `/actuator/health/readiness` to k8s probes as shown earlier.
+
+---
+
+ 46 — API that publishes an event to Kafka (Spring Kafka)
+
+*pom dependencies:* `spring-kafka`
+
+*Producer config*
+
+```java
+@Configuration
+public class KafkaProducerConfig {
+    @Bean
+    public ProducerFactory<String, String> producerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "${kafka.bootstrap-servers}");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(props);
+    }
+    @Bean
+    public KafkaTemplate<String, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
+}
+```
+
+*Controller to publish*
+
+```java
+@RestController
+@RequestMapping("/api/events")
+public class EventController {
+    private final KafkaTemplate<String, String> kafka;
+    public EventController(KafkaTemplate<String, String> kafka) { this.kafka = kafka; }
+
+    @PostMapping("/instrument-updated")
+    public ResponseEntity<Void> publish(@RequestBody String payload) {
+        kafka.send("instrument.updated", payload);
+        return ResponseEntity.accepted().build();
+    }
+}
+```
+
+* For production, use Avro/Schema Registry, partitioning, retries, and ack configs.
+
+---
+
+ 47 — GitHub Actions: CI/CD (build → Docker → ECR → EKS)
+
+*`.github/workflows/ci-cd.yml` (simplified)*
+
+```yaml
+name: CI CD Pipeline
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/instrument-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Build with Maven
+        run: mvn -B -DskipTests package
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        run: aws ecr get-login-password | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build and Push Docker image
+        run: |
+          docker build -t $IMAGE:${{ github.sha }} .
+          docker tag $IMAGE:${{ github.sha }} $IMAGE:latest
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+      - name: Update Kubernetes (kubectl)
+        uses: imranismail/setup-kubectl@v3
+        with:
+          version: 'v1.27.3'
+      - name: Deploy to EKS
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+          kubectl set image deployment/instrument-service instrument=${IMAGE}:${{ github.sha }} --record
+```
+
+* Use IAM role for GitHub or store short-lived creds; consider using `eksctl`/Helm.
+
+---
+
+ 48 — Spring Boot + AWS S3 (upload/download)
+
+*Dependencies:* `aws-java-sdk-s3` or `spring-cloud-aws-starter` (or AWS SDK v2).
+
+*Properties*
+
+```properties
+cloud.aws.region.static=ap-south-1
+cloud.aws.credentials.accessKey=${AWS_ACCESS_KEY}
+cloud.aws.credentials.secretKey=${AWS_SECRET_KEY}
+```
+
+*S3 Service (AWS SDK v2 example)*
+
+```java
+@Service
+public class S3Service {
+    private final S3Client s3;
+    private final String bucket = "my-bucket";
+    public S3Service() {
+        this.s3 = S3Client.builder().region(Region.AP_SOUTH_1).build();
+    }
+    public void upload(String key, InputStream data, long length) {
+        PutObjectRequest req = PutObjectRequest.builder().bucket(bucket).key(key).build();
+        s3.putObject(req, RequestBody.fromInputStream(data, length));
+    }
+    public byte[] download(String key) {
+        ResponseBytes<GetObjectResponse> ob = s3.getObjectAsBytes(GetObjectRequest.builder().bucket(bucket).key(key).build());
+        return ob.asByteArray();
+    }
+}
+```
+
+*Controller sample*
+
+```java
+@PostMapping("/s3/upload")
+public ResponseEntity<String> upload(@RequestParam MultipartFile file) throws IOException {
+    s3Service.upload(file.getOriginalFilename(), file.getInputStream(), file.getSize());
+    return ResponseEntity.ok("uploaded");
+}
+```
+
+* Use IAM roles for EKS pods (IRSA) instead of keys.
+
+---
+
+ 49 — Externalize config using Spring Cloud Config
+
+*Pattern*
+
+* *Config Server* (centralized): backs onto Git repo with `application.yml` files per app/profile.
+* *Clients* use `spring-cloud-starter-config` to fetch config at startup.
+
+*Config Server minimal*
+
+```yaml
+ application.yml (config-server)
+server:
+  port: 8888
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/your-org/config-repo
+```
+
+*Client bootstrap properties*
+
+```properties
+spring.application.name=instrument-service
+spring.cloud.config.uri=http://config-server:8888
+```
+
+* Store `application-prod.yml`, `instrument-service-prod.yml` in repo.
+* For secrets, integrate with Vault / AWS Secrets Manager.
+
+---
+
+ 50 — Rate limiting with Bucket4j (example)
+
+*Dependencies:* `bucket4j-core` and optionally `bucket4j-jcache` or `spring-boot-starter-web`.
+
+*Filter using in-memory token bucket*
+
+```java
+@Component
+public class RateLimitFilter extends OncePerRequestFilter {
+    private final Bucket bucket = Bucket4j.builder()
+        .addLimit(Bandwidth.classic(100, Refill.greedy(100, Duration.ofMinutes(1))))
+        .build();
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+        if (bucket.tryConsume(1)) {
+            chain.doFilter(req, res);
+        } else {
+            res.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            res.getWriter().write("Too many requests");
+        }
+    }
+}
+```
+
+*Distributed scenario*
+
+* Use Redis or JCache-based `Bucket4j` extension to hold bucket state for multi-replica rate limiting.
+
+---
+
+ Quick interview talking points
+
+* For production: emphasize secrets management (IRSA, Vault), secure JWT handling, circuit breakers (Resilience4j), retries, idempotency for events, monitoring and alerting, database migrations (Flyway/Liquibase), and backup/restore for RDS.
+* For Kafka: mention schema registry (Avro/Protobuf), topics partitioning & retention, consumer groups, and exactly-once semantics if required.
+* For CI/CD: mention immutability (tagged images), canary deployments, rollback strategy, and IaC (Terraform) for infra.
+
+-------------------------------------------------
+
+Nice — great roundup. Below are *concise, interview-ready answers* for *System Design (51–55)* and *Testing & DevOps (56–60)*. Each design gives architecture, components, data flows, and key trade-offs. For testing items I include copy-pasteable code (JUnit, Mockito, Testcontainers) and a simple API-contract test. At the end you’ll get the essential Git commands.
+
+---
+
+ 51 — Design: User Authentication using OAuth2 + JWT
+
+*Goal:* Secure authentication and authorization for APIs with short-lived JWTs, refresh tokens, and OAuth2 flows.
+
+*High-level components*
+
+* *Authorization Server* (OAuth2): handles login, issues access token (JWT) and refresh token. Could be Keycloak, Auth0, or Spring Authorization Server.
+* *Resource Server(s)* (APIs): validate JWTs (signature + claims); use `spring-boot-starter-oauth2-resource-server`.
+* *Clients*: frontend (SPA) or mobile using Authorization Code w/ PKCE, backend services using Client Credentials flow.
+* *Token storage*: stateless JWTs signed with asymmetric keys (RS256). Refresh tokens optionally stored server-side (DB/Redis) to allow revocation.
+* *User Store*: LDAP/DB for user credentials and roles/claims.
+
+*Flows*
+
+* *Auth Code + PKCE (recommended for SPAs/mobile)*:
+
+  1. Client -> Authorization Server: /authorize (user login)
+  2. User authenticates, AS returns authorization code
+  3. Client exchanges code + PKCE for `access_token (JWT)` and `refresh_token`
+  4. Client uses JWT in `Authorization: Bearer <jwt>` to call resource APIs
+  5. When JWT expires, client uses refresh token to get new JWT
+* *Client Credentials (machine->machine)*: client gets JWT using client id/secret; no user context.
+
+*JWT validation & introspection*
+
+* Resource servers validate JWT signature (prefer JWKs endpoint for key rotation).
+* Optionally, use introspection endpoint for opaque tokens or short-lifetime JWTs + server-side blacklist.
+
+*Security considerations*
+
+* Use HTTPS everywhere.
+* Use asymmetric signing (RSA) so resource servers only need public key.
+* Refresh tokens: store server-side (DB/Redis) or use rotating refresh tokens to mitigate reuse.
+* Provide logout/revocation endpoints; blacklist tokens if needed.
+* Minimize JWT payload — include subject, roles, expiry, issuer, audience.
+* Apply scopes/roles for authorization checks.
+
+*Scaling & HA*
+
+* Authorization server should be highly available (clustered or managed).
+* JWT validation is stateless → resource servers horizontally scalable.
+* Use rate limiting and brute-force protections on auth endpoints.
+
+---
+
+ 52 — Design: High-Availability Microservice Architecture for DMSI
+
+*Goal:* Highly available, scalable, and consistent static reference data service (golden copy for instruments).
+
+*Core components*
+
+* *API Layer (Stateless Spring Boot microservices)*: instrument-service (CRUD), ingestion-service, audit-service, search-service.
+* *API Gateway*: authentication, rate-limiting, routing (e.g., API Gateway / Istio / Kong).
+* *Database*: Primary DB (Postgres/RDS) with read replicas; use logical replication or streaming for read scaling.
+* *Cache*: Redis or in-memory cache (e.g., Redis cluster) for hot reads (golden copy frequently read).
+* *Event Bus*: Kafka for publishing `instrument.updated` events to subscribers.
+* *Audit / History Store*: immutable audit logs (append-only) — could be separate DB or Kafka topic persisted to long-term storage (S3).
+* *CI/CD & Infra*: EKS (k8s) with multiple AZs, autoscaling, Helm charts, GitOps (Flux/ArgoCD).
+* *Monitoring & Observability*: Prometheus + Grafana, ELK/EFK for logs, distributed tracing (Jaeger).
+
+*Data flow & consistency*
+
+* Writes (create/update) go to instrument-service → transactionally persist to DB (ACID) → publish event to Kafka in same transaction using outbox pattern (recommended).
+* Reads use DB queries; optionally serve from Redis cache. To ensure cache consistency, either invalidate cache on update or use CQRS where read model is updated via events.
+* *Outbox pattern*: transactional insert into `outbox` table + separate publisher polls outbox -> publish to Kafka -> mark published. Ensures atomicity between DB write and event publication.
+
+*High-availability patterns*
+
+* Multi-AZ DB (primary + synchronous/async replicas).
+* Multiple Kubernetes replicas across AZs with readiness/liveness probes.
+* Use leader-election for background jobs if needed.
+* Backups, snapshotting, and disaster recovery plan (RTO/RPO defined).
+
+*Failure scenarios*
+
+* DB failover: use read-replica promotion + reconfigure connections.
+* Kafka partition failure: ensure replication factor >1 and ISR healthy.
+* Partial failures: consumers must be idempotent and handle replays.
+
+---
+
+ 53 — Design: Bulk Ingestion Pipeline for CSV Uploads
+
+*Requirements:* Accept large CSVs, validate, transform, persist efficiently, and notify downstream systems.
+
+*High-level approach*
+
+1. *Upload API*: client uploads CSV via multipart to ingestion-service (or S3 pre-signed URL). For large files prefer *direct-to-S3* to avoid app memory/disk issues.
+2. *Persist raw file*: store the file in object storage (S3) and return an ingestion job id immediately (async processing).
+3. *Validation & Parsing*: use a background worker (K8s job or ingestion microservice) to stream the file line-by-line (avoid loading whole file). Use libraries like OpenCSV or Apache Commons CSV.
+4. *Data validation*: validate fields, apply transform rules, collect row-level errors. Store errors in an "error report" file (S3) and persist metadata in DB.
+5. *Batch write*: group valid rows into batches and perform bulk inserts (JDBC batch or COPY for Postgres). Use transactions per batch; log failures.
+6. *Event publishing*: for each successful ingest/batch, insert outbox record → publisher service picks and publishes events to Kafka (e.g., `instrument.ingested`, `instrument.updated`).
+7. *Monitoring & retries*: retry transient failures with exponential backoff; track job status (PENDING → PROCESSING → PARTIAL\_SUCCESS → SUCCESS → FAILED).
+8. *Idempotency*: provide dedupe strategy (e.g., unique constraint on ISIN + UPSERT semantics) to safely reprocess rows.
+
+*Scaling & optimizations*
+
+* Use multiple worker pods consuming from a queue (SQS/Kafka) for parallel processing of file partitions.
+* For very large files, split into chunks and process in parallel.
+* Use DB COPY or bulk loaders for performance.
+* For schema evolution, version the ingest schema and transform accordingly.
+
+*Security*
+
+* Use pre-signed S3 for uploads, scan files for malware, validate CSV size limits, and sanitize input.
+
+---
+
+ 54 — Design: Notification System (SMS / Email)
+
+*Requirements:* Reliable delivery, retry, throttling, templating, personalization.
+
+*Components*
+
+* *Notification Service(s)*: microservice that accepts notification requests (type, recipient, templateId, payload). Stateless API.
+* *Queue/Topic*: Kafka or SQS to decouple producers from delivery workers.
+* *Worker Pool / Sender Service*: consumers that pick messages and send using providers (SMTP for email or Twilio/SES for SMS). Multiple workers for concurrency.
+* *Template Engine*: Mustache/Thymeleaf/FreeMarker to render templates with personalization.
+* *Provider Adapters*: adapter pattern to integrate multiple providers (e.g., SES, SendGrid, Twilio) with failover.
+* *Delivery tracking*: store status (PENDING → SENT → FAILED) with delivery receipts and retry metadata in DB.
+* *Rate limiting & throttling*: apply provider-based throttles and per-customer rate limits (Bucket4j/Redis).
+* *DLQ & retry policy*: non-transient failures go to DLQ for manual handling; transient errors retried with exponential backoff.
+* *Monitoring*: metrics for delivery rates, latencies, failure rates, and dashboard/alerts.
+
+*Flow*
+
+1. App publishes notification request to queue.
+2. Worker consumes, renders template, selects provider adapter.
+3. Send request; on success update DB and emit `notification.sent` event; on transient failure retry; on final failure move to DLQ and alert.
+
+*Security & Compliance*
+
+* Mask PII in logs.
+* Comply with opt-in/opt-out rules (CAN-SPAM, GDPR).
+* Store consent status and suppression lists.
+
+---
+
+ 55 — Design: Payment Transaction Service ensuring ACID properties
+
+*Goal:* Process payments/transfers with strong consistency and durability.
+
+*Key components*
+
+* *Payment API (stateless)*: creates payment request and orchestrates flow.
+* *Transactional DB*: relational DB (Postgres/RDS) enforcing ACID for core ledger tables.
+* *Ledger model*: ledger entries table (id, account\_id, amount, type(debit/credit), balance\_after, txn\_id, timestamp).
+* *Two-phase operation*: debit source account, credit destination account, persist state in same DB transaction.
+* *Idempotency*: idempotency key per request to prevent double-spend.
+* *Isolation*: use SELECT ... FOR UPDATE or SERIALIZABLE/REPEATABLE READ to avoid race conditions & double spends.
+* *Outbox pattern*: if you must notify downstream systems, use outbox in same DB transaction and publish events after commit.
+* *Compensation*: in distributed multi-service flows use Sagas (or orchestrated compensations) if cross-service transactions needed.
+
+*Example flow (single DB)*
+
+* Begin DB transaction.
+* Lock both accounts row (`SELECT balance FROM accounts WHERE id IN (...) FOR UPDATE`).
+* Check sufficient balance on source.
+* Deduct source balance; insert debit ledger entry.
+* Add to destination balance; insert credit ledger entry.
+* Commit transaction.
+* Insert event in outbox (same transaction). After commit, publisher picks up outbox and emits `payment.completed`.
+
+*Distributed payments (across multiple services)*
+
+* Prefer *saga pattern* with orchestrator: each step has forward action and compensating action on failure.
+* Prefer *eventual consistency* with strong idempotency & replays.
+
+*Failure handling*
+
+* If transaction fails before commit → DB rollback → no partial ledger change.
+* If external provider failure after DB commit (e.g., card authorization), use compensating action or hold funds and reconcile asynchronously.
+
+*Security & Compliance*
+
+* PCI DSS for card data: never store card numbers; use tokenization via payment gateways.
+* Strong audit trail, immutable ledger, and encryption at rest/transit.
+
+---
+
+ 56 — JUnit test for a REST API controller (Spring Boot + MockMvc)
+
+*Controller under test* (snippet)
+
+```java
+@RestController
+@RequestMapping("/api/employees")
+public class EmployeeController {
+    private final EmployeeService svc;
+    public EmployeeController(EmployeeService svc) { this.svc = svc; }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(svc.findById(id));
+    }
+}
+```
+
+*JUnit test using MockMvc*
+
+```java
+import com.example.demo.model.Employee;
+import com.example.demo.service.EmployeeService;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.*;
+
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(EmployeeController.class)
+class EmployeeControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private EmployeeService svc;
+
+    @Test
+    void getById_returnsEmployee() throws Exception {
+        Employee e = new Employee(1L, "Akshay", "akshay@mail", 5000.0);
+        when(svc.findById(1L)).thenReturn(e);
+
+        mockMvc.perform(get("/api/employees/1"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.name").value("Akshay"));
+    }
+}
+```
+
+---
+
+ 57 — Mockito test for a service layer method
+
+*Service*
+
+```java
+public class CalculatorService {
+    private final TaxService taxService;
+    public CalculatorService(TaxService taxService) { this.taxService = taxService; }
+    public double calculateNet(double amount) {
+        double tax = taxService.taxFor(amount);
+        return amount - tax;
+    }
+}
+```
+
+*Mockito unit test*
+
+```java
+import org.junit.jupiter.api.*;
+import org.mockito.*;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+class CalculatorServiceTest {
+    @Mock
+    TaxService taxService;
+
+    CalculatorService calculator;
+
+    @BeforeEach
+    void setup() { MockitoAnnotations.openMocks(this); calculator = new CalculatorService(taxService); }
+
+    @Test
+    void calculateNet_usesTaxService() {
+        when(taxService.taxFor(100.0)).thenReturn(10.0);
+        double result = calculator.calculateNet(100.0);
+        assertEquals(90.0, result);
+        verify(taxService).taxFor(100.0);
+    }
+}
+```
+
+---
+
+ 58 — Testcontainers: test with PostgreSQL in Spring Boot
+
+*pom dependencies*
+
+```xml
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>postgresql</artifactId>
+  <scope>test</scope>
+</dependency>
+<dependency>
+  <groupId>org.testcontainers</groupId>
+  <artifactId>junit-jupiter</artifactId>
+  <scope>test</scope>
+</dependency>
+```
+
+*Integration test*
+
+```java
+import org.junit.jupiter.api.*;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
+@SpringBootTest
+class EmployeeRepositoryTest {
+
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+        .withDatabaseName("testdb")
+        .withUsername("test")
+        .withPassword("test");
+
+    @BeforeAll
+    static void start() { postgres.start(); }
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
+
+    @Test
+    void contextLoads() {
+        // repository tests against real Postgres container
+    }
+}
+```
+
+* Testcontainers spins up a real DB for reliable integration tests.
+
+---
+
+ 59 — API Contract Testing with Swagger/OpenAPI
+
+*Expose OpenAPI (springdoc)*
+
+* Add dependency: `org.springdoc:springdoc-openapi-ui`.
+* The OpenAPI JSON is available at `/v3/api-docs`.
+
+*Basic contract test (validate presence of path)*
+
+```java
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class OpenApiContractTest {
+
+    @Autowired MockMvc mvc;
+
+    @Test
+    void apiDocs_containsEmployeePath() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+          .andExpect(status().isOk())
+          .andExpect(content().string(org.hamcrest.Matchers.containsString("/api/employees")));
+    }
+}
+```
+
+*Notes on stricter contract testing*
+
+* Use *Pact* or *Spring Cloud Contract* for consumer-driven contract tests between frontend and backend.
+* Use CI pipeline to fail if contract changes unexpectedly.
+
+---
+
+ 60 — Essential Git commands (clone, branch, merge, resolve conflicts)
+
+* Clone a repo:
+
+```bash
+git clone git@github.com:org/repo.git
+```
+
+* Create & switch to a branch:
+
+```bash
+git checkout -b feature/my-feature
+```
+
+* Stage & commit changes:
+
+```bash
+git add .
+git commit -m "Implement feature X"
+```
+
+* Push branch:
+
+```bash
+git push -u origin feature/my-feature
+```
+
+* Update local main and rebase your feature (preferred for a clean history):
+
+```bash
+git checkout main
+git pull origin main
+git checkout feature/my-feature
+git rebase main
+ resolve conflicts if any, then
+git add <file>
+git rebase --continue
+git push --force-with-lease
+```
+
+* Merge via PR (preferred). To merge locally:
+
+```bash
+git checkout main
+git merge --no-ff feature/my-feature
+git push origin main
+```
+
+* Resolve conflicts (manual steps):
+
+  1. Open conflicting files, edit to resolve markers (`<<<<<<<`, `=======`, `>>>>>>>`).
+  2. `git add <resolved-file>`
+  3. `git commit` (if merge commit) or `git rebase --continue`
+* View log:
+
+```bash
+git log --oneline --graph --decorate
+```
+
+============================================================================
 
 
 
